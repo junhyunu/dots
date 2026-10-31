@@ -12,7 +12,7 @@ export function storyText(subtitle: string, body: string): string {
 
 export function starText(title: string, star: Pick<StarDraft, "situation" | "task" | "actions" | "result" | "learning">): string {
   const actions = star.actions.map((a) => `- ${a.label}: ${a.body}`).join("\n");
-  return `${title}\n\n[S 상황]\n${star.situation}\n\n[T 과제]\n${star.task}\n\n[A 행동]\n${actions}\n\n[R 결과]\n${star.result}\n\n[배운 점]\n${star.learning}`;
+  return `${title}\n\n[S 상황]\n${star.situation}\n\n[T 목표]\n${star.task}\n\n[A 행동]\n${actions}\n\n[R 결과]\n${star.result}\n\n[배운 점]\n${star.learning}`;
 }
 
 export async function copyText(text: string): Promise<boolean> {

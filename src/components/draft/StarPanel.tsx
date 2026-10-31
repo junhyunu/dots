@@ -13,7 +13,7 @@ import TaskState from "@/components/ui/TaskState";
 
 const BLOCKS: { id: StarBlock; letter: string; name: string }[] = [
   { id: "situation", letter: "S", name: "상황" },
-  { id: "task", letter: "T", name: "과제" },
+  { id: "task", letter: "T", name: "목표" },
   { id: "actions", letter: "A", name: "행동" },
   { id: "result", letter: "R", name: "결과" },
   { id: "learning", letter: "+", name: "배운 점" },

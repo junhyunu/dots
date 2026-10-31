@@ -46,7 +46,7 @@ type StarBody = Omit<StarDraft, "generatedAt" | "edited">;
 
 function starBlock(star: StarBody): string {
   const actions = star.actions.map((a, i) => `${i + 1}. ${a.label}: ${a.body}`).join("\n");
-  return `[STAR 원고]\nS 상황: ${star.situation}\nT 과제: ${star.task}\nA 행동:\n${actions}\nR 결과: ${star.result}\n배운 점: ${star.learning}`;
+  return `[STAR 원고]\nS 상황: ${star.situation}\nT 목표: ${star.task}\nA 행동:\n${actions}\nR 결과: ${star.result}\n배운 점: ${star.learning}`;
 }
 
 function competencyBlock(): string {
@@ -68,7 +68,7 @@ const join = (...blocks: string[]) => blocks.filter(Boolean).join("\n\n");
 
 // ---------- 작업 정의 ----------
 
-const STAR_BLOCK_NAMES = { situation: "S 상황", task: "T 과제", actions: "A 행동", result: "R 결과", learning: "배운 점" };
+const STAR_BLOCK_NAMES = { situation: "S 상황", task: "T 목표", actions: "A 행동", result: "R 결과", learning: "배운 점" };
 
 export const TASK_DEFS: { [T in TaskName]: TaskDef<T> } = {
   questions: {

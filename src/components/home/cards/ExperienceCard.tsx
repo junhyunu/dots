@@ -13,17 +13,20 @@ import { href } from "@/lib/mode";
 
 const workHref = (id: string, step?: string) => href(`/work?id=${encodeURIComponent(id)}${step ? `&step=${step}` : ""}`);
 
-function Cell({ title, icon: Icon, children, className = "", emphasis = false }: {
+function Cell({ title, icon: Icon, children, className = "", emphasis = false, badge }: {
   title: string; icon: typeof Flag; children: React.ReactNode; className?: string; emphasis?: boolean;
+  /** 있으면 칸 맨 위에 배지를 두고, 제목은 그 아래로 내린다 (장면 칸: 대표/보조 역량 배지) */
+  badge?: React.ReactNode;
 }) {
   return (
     <section
       className={`flex flex-col rounded-xl border p-4 ${emphasis ? "border-primary-soft-line bg-primary-soft" : "border-line bg-surface"} ${className}`}
     >
       <header className="mb-3 flex items-center justify-between gap-2 text-sm text-ink-soft">
-        <h4 className="font-medium">{title}</h4>
+        {badge ?? <h4 className="font-medium">{title}</h4>}
         <Icon className="size-4 text-ink-faint" aria-hidden />
       </header>
+      {badge && <h4 className="mb-1 text-sm font-medium text-ink-soft">{title}</h4>}
       <div className="leading-relaxed text-ink">{children}</div>
     </section>
   );
@@ -221,24 +224,29 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
               <p className="text-ink-faint">역량 키워드가 아직 없어요.</p>
             )}
           </Cell>
-          <Cell title={`${competency(competencyId).name} 장면`} icon={Target} emphasis>
-            {match && (
-              <>
-                <span className="mb-1.5 inline-block rounded-md bg-primary-fill px-1.5 py-0.5 text-xs font-semibold text-on-primary">
+          <Cell
+            title={`${competency(competencyId).name} 장면`}
+            icon={Target}
+            emphasis
+            badge={
+              match && (
+                <span className="inline-block rounded-md bg-primary-fill px-1.5 py-0.5 text-xs font-semibold text-on-primary">
                   {match.role === "primary" ? "대표 역량" : "보조 역량"}
                 </span>
-                <p className="font-medium break-keep">{match.scene}</p>
-              </>
-            )}
+              )
+            }
+          >
+            {match && <p className="font-medium break-keep">{match.scene}</p>}
           </Cell>
+        </div>
+
+        {/* STAR 순서대로: 상황 · 목표 → 행동 → 결과 → 배운 점 */}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Cell title="상황" icon={Flag}>
             <ClampText text={item.star.situation} />
           </Cell>
-          <Cell title="과제" icon={Target}>
+          <Cell title="목표" icon={Target}>
             <ClampText text={item.star.task} />
-          </Cell>
-          <Cell title="결과" icon={Trophy}>
-            <ClampText text={item.star.result} />
           </Cell>
         </div>
 
@@ -270,6 +278,12 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
             );
           })}
         </ol>
+
+        <h3 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
+          <Trophy className="size-4 text-ink-faint" aria-hidden />
+          결과
+        </h3>
+        <p className="rounded-xl border border-line p-4 text-[15px] leading-relaxed">{item.star.result}</p>
 
         <h3 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
           <BookOpen className="size-4 text-ink-faint" aria-hidden />

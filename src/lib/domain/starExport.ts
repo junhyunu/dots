@@ -28,7 +28,7 @@ export function starDocument(item: ShowcaseExperience): StarDocument {
     meta,
     sections: [
       { heading: "S 상황", paragraphs: [star.situation] },
-      { heading: "T 과제", paragraphs: [star.task] },
+      { heading: "T 목표", paragraphs: [star.task] },
       { heading: "A 행동", items: star.actions.map((a) => ({ label: a.label, body: a.body })) },
       { heading: "R 결과", paragraphs: [star.result] },
       { heading: "배운 점", paragraphs: [star.learning] },
