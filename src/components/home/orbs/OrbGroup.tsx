@@ -160,7 +160,10 @@ export default function OrbGroup({ selected, counts, onSelect }: Props) {
     const el = slideRefs.current[selected];
     if (!track || !el || track.offsetParent === null) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    track.scrollTo({ left: el.parentElement!.offsetLeft - (track.clientWidth - el.parentElement!.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
+    // 버튼을 감싼 상자가 아니라 슬라이드 칸 자체를 기준으로 가운데에 맞춘다
+    const slide = el.closest<HTMLElement>(".orb-slide");
+    if (!slide) return;
+    track.scrollTo({ left: slide.offsetLeft - (track.clientWidth - slide.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
   }, [selected]);
 
   const step = (dir: 1 | -1) => {
