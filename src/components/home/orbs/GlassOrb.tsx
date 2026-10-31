@@ -81,8 +81,9 @@ export default function GlassOrb({
   return (
     <span className="block" onPointerEnter={(e) => e.pointerType === "mouse" && setHover(true)} onPointerLeave={() => setHover(false)}>
       <span className="orb relative block aspect-square w-full" data-selected={selected} data-empty={empty}>
-        {/* 바깥 빛: 선택·호버한 채워진 구슬만 (CSS 그림자라 매 프레임 다시 그리지 않음) */}
-        {!empty && (
+        {/* 바깥 빛: 선택·호버한 채워진 구슬만 (CSS 그림자라 매 프레임 다시 그리지 않음).
+            모바일 캐러셀(compact)에는 없음: 옆으로 넘기는 상자가 빛을 네모나게 잘라서 (사용자 결정) */}
+        {!empty && !compact && (
           <span
             aria-hidden
             className="orb-glow pointer-events-none absolute inset-[8%] rounded-full"

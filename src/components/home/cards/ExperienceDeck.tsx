@@ -1,6 +1,6 @@
 "use client";
 // 선택한 역량에 연결된 경험 목록. 제목 줄(경험명·장면 한 줄·대표/보조)만 보이고, 누르면 그 아래로 결과물 카드가 펼쳐진다.
-// 처음엔 모두 접힘, 한 번에 하나만 펼친다. 위쪽 카드가 닫혀도 누른 제목 줄은 화면에서 그 자리에 있게 한다 (사용자 결정).
+// 처음엔 모두 접힘, 한 번에 하나만 펼친다. 펼치면 화면이 그 제목 줄로 따라가 상단바 바로 아래에 맞춘다 (목록 순서는 그대로, 사용자 결정).
 import { useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { competencyName } from "@/lib/domain/competencies";
@@ -19,7 +19,8 @@ function Row({ item, cid, open, onToggle, rowRef }: {
   const panelId = `exp-panel-${item.id}`;
   return (
     <li
-      className={`overflow-hidden rounded-2xl border bg-surface transition-shadow duration-150 ${
+      // 펼칠 때 화면을 맞출 위치: 홈 상단바(4rem) + 시연 띠(--top-offset) + 여백
+      className={`scroll-mt-[calc(var(--top-offset)+5rem)] overflow-hidden rounded-2xl border bg-surface transition-shadow duration-150 ${
         open ? "border-line-strong shadow-[0_24px_60px_-30px_rgb(0_0_0/0.35)] dark:shadow-[0_24px_60px_-30px_rgb(0_0_0/0.9)]" : "border-line"
       }`}
     >
@@ -75,8 +76,14 @@ export default function ExperienceDeck({ items, competencyId }: { items: Showcas
     anchor.current = null;
     const el = a && rows.current[a.id];
     if (!a || !el) return;
+    // 1) 위쪽 카드가 바로 닫혀 줄이 밀려 올라간 만큼 먼저 되돌려 흔들림을 없애고
     const delta = el.getBoundingClientRect().top - a.top;
     if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: "instant" });
+    // 2) 펼쳤으면 그 줄이 상단바 바로 아래에 오도록 부드럽게 따라간다 (닫을 때는 움직이지 않음)
+    if (openId === a.id) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.closest("li")?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
   }, [openId]);
 
   return (

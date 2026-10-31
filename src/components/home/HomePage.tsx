@@ -53,7 +53,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl border-line px-4 sm:px-6 xl:border-x">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* 중앙 상단: 타이틀 (ux-writing C안) */}
         <section aria-labelledby="hero-title" className="flex flex-col items-center pb-12 pt-16 text-center sm:pb-16 sm:pt-24">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-sm text-ink-soft">
