@@ -26,7 +26,10 @@ export async function runTask(key: string, fn: () => Promise<void>): Promise<voi
     await fn();
     setTask(key, undefined);
   } catch (e) {
-    console.error(e);
+    // AI 요청 실패(GenerateError)는 화면에 안내 + 다시 시도로 처리하므로 경고로만 남긴다.
+    // (console.error면 개발 서버가 오류 창을 띄워 시연 영상에 찍힌다) 예상하지 못한 오류만 error로.
+    if (e instanceof GenerateError) console.warn("[task]", e.message);
+    else console.error(e);
     const message = e instanceof Error && e.message ? e.message : "알 수 없는 오류가 났어요. 다시 시도해 주세요.";
     const retryable = e instanceof GenerateError ? e.retryable : true;
     setTask(key, { state: "error", message, retryable, retry: () => void runTask(key, fn) });

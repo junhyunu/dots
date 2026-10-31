@@ -4,6 +4,8 @@
 import type { ExperienceContext, TaskName, TaskOutput, TaskPayloads } from "@/lib/ai/contract";
 import { stageDef } from "@/lib/domain/stages";
 import type { StageId } from "@/lib/domain/types";
+import { GenerateError } from "@/lib/api";
+import { consumeFail } from "./failSwitch";
 import { DEMO_POOL } from "./pool";
 
 export const DEMO_BASIC = { title: "학과 축제 먹거리 부스 운영", period: "2025년 5월, 축제 3일", role: "부스 운영 총괄 (5명 팀)" };
@@ -195,5 +197,7 @@ function respond<T extends TaskName>(task: T, payload: TaskPayloads[T]): TaskOut
 /** 진짜처럼 보이게 0.7~1.2초 기다린 뒤 대본 응답 */
 export async function demoGenerate<T extends TaskName>(task: T, payload: TaskPayloads[T]): Promise<TaskOutput<T>> {
   await new Promise((r) => setTimeout(r, 700 + Math.random() * 500));
+  // [오류 흉내]가 켜져 있으면 이번 한 번만 실제 연결 실패와 같은 안내로 실패한다 (다시 시도하면 정상)
+  if (consumeFail()) throw new GenerateError("AI 서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.", true);
   return respond(task, payload);
 }

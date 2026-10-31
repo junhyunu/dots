@@ -2,8 +2,9 @@
 // 시연 모드 띠: 실제 데이터와 분리돼 있음을 알리고, 구성 바꾸기·초기화·나가기를 제공한다.
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FlaskConical, LogOut, PenLine, RotateCcw, Shuffle } from "lucide-react";
+import { FlaskConical, LogOut, PenLine, RotateCcw, Shuffle, WifiOff } from "lucide-react";
 import { DEFAULT_SEED } from "@/content/demo/build";
+import { FAIL_EVENT, isFailArmed, setFailArmed } from "@/content/demo/failSwitch";
 import { href } from "@/lib/mode";
 import { currentSeed, loadDemo } from "./demoState";
 
@@ -13,6 +14,13 @@ const label = "sr-only sm:not-sr-only";
 
 export default function DemoBar() {
   const [seed, setSeed] = useState(currentSeed);
+  // [오류 흉내]: 다음 AI 요청 한 번 실패. 실패가 일어나면 대본 쪽에서 꺼지므로 그 알림을 받아 버튼도 맞춘다
+  const [failArmed, setFailState] = useState(isFailArmed);
+  useEffect(() => {
+    const sync = () => setFailState(isFailArmed());
+    window.addEventListener(FAIL_EVENT, sync);
+    return () => window.removeEventListener(FAIL_EVENT, sync);
+  }, []);
   // 띠를 위에 고정하고, 그 높이를 --top-offset으로 알려 상단바·사이드바가 비켜 서게 한다
   const barRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -53,6 +61,16 @@ export default function DemoBar() {
           <button type="button" className={btn} onClick={() => apply(DEFAULT_SEED, "처음 구성(#1)으로 되돌릴까요? 시연 중 만든 경험도 사라져요.")}>
             <RotateCcw className="size-3.5" aria-hidden />
             <span className={label}>처음 상태로</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={failArmed}
+            title="켜면 다음 AI 요청 한 번이 연결 실패로 끝나요. 다시 시도하면 정상으로 이어져요."
+            onClick={() => setFailArmed(!failArmed)}
+            className={`${btn} ${failArmed ? "border-transparent bg-bg text-danger" : ""}`}
+          >
+            <WifiOff className="size-3.5" aria-hidden />
+            <span className={label}>{failArmed ? "다음 요청 실패 예정" : "오류 흉내"}</span>
           </button>
           {/* 페이지를 새로 불러와야 실제 모드(실제 저장 공간)로 돌아간다 */}
           <a href="/" className={btn}>
