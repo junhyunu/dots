@@ -1,0 +1,29 @@
+# 의존성·빌드
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# 환경변수 — API 키는 절대 저장소에 올리지 않는다
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# 기타
+.DS_Store
+.vercel
+
+# 개인 자료 — 실행에 필요 없어 저장소에 올리지 않는다
+참고자료/
+설문결과/
+기록/
+
+# 실행 기록·운영체제·편집기 파일
+*.log
+npm-debug.log*
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
