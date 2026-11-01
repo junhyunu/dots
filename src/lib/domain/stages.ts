@@ -35,7 +35,7 @@ export const STAGES: StageDef[] = [
   },
   {
     id: "learning",
-    name: "배운점",
+    name: "배운 점",
     title: "무엇을 배웠나요?",
     focus: ["이 경험으로 얻은 교훈은?", "비슷한 상황에서 어떻게 행동할 것인가?"],
   },
