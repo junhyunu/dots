@@ -1,4 +1,4 @@
-// 브라우저 전용: STAR 원고를 파일로 내려받는다. 서버로는 아무것도 보내지 않는다.
+// 브라우저 전용: 경험 문서(STAR 원고 + 스토리)를 파일로 내려받는다. 서버로는 아무것도 보내지 않는다.
 import type { ShowcaseExperience } from "@/lib/domain/showcase";
 import { starDocument, starDocumentMarkdown, starDocumentText, starFileName, type StarDocument } from "@/lib/domain/starExport";
 
@@ -30,6 +30,12 @@ async function toDocx(doc: StarDocument): Promise<Blob> {
     s.items?.forEach((it, i) => {
       children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(`${i + 1}. ${it.label}`)] }));
       children.push(new Paragraph({ children: [new TextRun(it.body)] }));
+    });
+    s.stories?.forEach((st) => {
+      children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 240 }, children: [new TextRun(st.heading)] }));
+      st.notes.forEach((n) => children.push(new Paragraph({ children: [new TextRun({ text: n, color: "70737C", size: 20 })] })));
+      if (st.subtitle) children.push(new Paragraph({ spacing: { before: 160 }, children: [new TextRun({ text: st.subtitle, bold: true })] }));
+      st.paragraphs.forEach((p) => children.push(new Paragraph({ children: [new TextRun(p)] })));
     });
   }
   const file = new Document({

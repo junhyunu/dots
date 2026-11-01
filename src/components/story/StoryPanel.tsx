@@ -371,7 +371,7 @@ export default function StoryPanel({ experience, onContinue }: { experience: Exp
           </div>
         ) : (
           <div className="flex flex-col gap-3 rounded-xl border border-line bg-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[15px] text-ink-soft">역량 연결까지 마치면 홈에 이 경험이 나타나요.</p>
+            <p className="text-[15px] text-ink-soft">역량 키워드까지 마치고 경험을 완성하면 홈에 이 경험이 나타나요.</p>
             <Button variant="secondary" onClick={onContinue}>
               이어서 정리하기
               <ArrowRight className="size-4" aria-hidden />

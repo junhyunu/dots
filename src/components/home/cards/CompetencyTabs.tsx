@@ -3,7 +3,8 @@
 // 펼친 카드를 가리지 않도록 사용자가 직접 접고 펼 수 있다. 접으면 지금 역량 이름이 든 작은 버튼만 화면 오른쪽 아래 구석에 남는다
 // (넓은 화면에서는 콘텐츠 바깥 여백에 놓여 카드를 가리지 않음).
 // 접었는지는 브라우저에 기억한다 (새로고침해도 유지).
-import { useState } from "react";
+// 접은 버튼도 펼친 막대처럼 카드 영역이 화면에 들어왔을 때만 보인다 (맨 위에서는 숨김, 사용자 결정 2026-11-01).
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { COMPETENCIES, competencyName } from "@/lib/domain/competencies";
 import type { CompetencyId } from "@/lib/domain/types";
@@ -33,16 +34,32 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
       // 저장소를 못 쓰면 이번 방문 동안만 유지
     }
   };
+  // 펼친 막대는 카드 영역에 붙어(sticky) 그 영역이 화면에 들어오면 나타난다. 접은 버튼(화면 고정)도 같은 때만 보이게 맞춘다.
+  // 아래 24px: 카드 영역이 화면 아래에서 약 24px 올라와야 펼친 막대가 보이기 시작한다(측정값)
+  const navRef = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const area = navRef.current?.parentElement;
+    if (!area) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "0px 0px -24px 0px" });
+    io.observe(area);
+    return () => io.disconnect();
+  }, []);
+  const hidden = collapsed && !inView;
   const SelectedIcon = COMPETENCY_ICONS[selected];
   // 그림자는 화면 끝까지의 간격(16px) 안에서 다 흐려지게 짧게: 아래 16px·옆 10px (길면 화면 끝에서 잘려 보임)
   const panel = "pointer-events-auto rounded-2xl border border-line bg-surface/90 shadow-[0_6px_16px_-6px_rgb(0_0_0/0.35)] backdrop-blur";
 
   return (
     <nav
+      ref={navRef}
       aria-label="다른 역량으로 이동"
+      // 숨김 = 흐려지며 사라지고, 누르거나 Tab으로 갈 수 없게(inert)
+      inert={hidden}
+      aria-hidden={hidden || undefined}
       // 접힌 버튼: 카드 옆에 자리가 있으면 카드 오른쪽 끝 + 14px에 붙인다(카드 오른쪽 끝 = 가운데 + 552px, 사용자 결정).
       // 1292px 이상 = 화살표 + 아이콘만 들어감, 1460px 이상 = 이름까지 들어감. 그보다 좁으면 화면 오른쪽 아래 구석
-      className={`pointer-events-none z-10 flex ${
+      className={`pointer-events-none z-10 flex transition-opacity duration-150 motion-reduce:transition-none ${hidden ? "opacity-0" : "opacity-100"} ${
         collapsed
           ? "fixed right-4 bottom-4 sm:right-6 sm:bottom-6 min-[1292px]:right-auto min-[1292px]:left-[calc(50%+566px)]"
           : "sticky bottom-4 mt-6 justify-center"

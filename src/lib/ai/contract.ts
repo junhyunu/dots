@@ -2,7 +2,7 @@
 // 새 AI 작업을 추가하려면: TASKS에 이름 추가 → 아래 스키마·payload 추가 → server/tasks.ts에 메시지 작성 함수 추가 → 프롬프트.md에 섹션 추가.
 import { z } from "zod";
 import { COMPETENCY_IDS } from "@/lib/domain/competencies";
-import type { ExperienceBasic, StageId, StarDraft, KeywordCandidate } from "@/lib/domain/types";
+import type { CompetencyId, ExperienceBasic, KeywordCandidate, MatchRole, StageId, StarDraft } from "@/lib/domain/types";
 
 export const TASKS = [
   "questions",
@@ -89,7 +89,12 @@ export interface TaskPayloads {
   followup: { context: ExperienceContext; stage: StageId; followupCount: number; forceComplete: boolean };
   final_check: { context: ExperienceContext };
   star: { context: ExperienceContext; regenerate?: { block: StarBlock; current: Omit<StarDraft, "generatedAt" | "edited"> } };
-  keyword: { basic: ExperienceBasic; star: Omit<StarDraft, "generatedAt" | "edited"> };
+  /** links = 키워드를 쓸 역량(연결한 역량 전체, 또는 [다시 쓰기]한 하나). 역량마다 1개씩 돌려받는다 */
+  keyword: {
+    basic: ExperienceBasic;
+    star: Omit<StarDraft, "generatedAt" | "edited">;
+    links: { competencyId: CompetencyId; role: MatchRole; scene: string }[];
+  };
   match: { basic: ExperienceBasic; star: Omit<StarDraft, "generatedAt" | "edited"> };
   story_followup: {
     basic: ExperienceBasic;

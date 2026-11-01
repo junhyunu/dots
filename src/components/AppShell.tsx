@@ -14,7 +14,7 @@ import { highlightRange, matchExperience, snippetAround, type SearchHit } from "
 import type { Experience } from "@/lib/domain/types";
 
 const STATUS_LABEL = { interviewing: "질문 중", drafting: "원고", keyword: "키워드", matching: "역량 연결", done: "완료" };
-const STEPS: Step[] = ["interview", "star", "keyword", "match", "story"];
+const STEPS: Step[] = ["interview", "star", "match", "keyword", "story"];
 /** 경험이 이만큼 이상일 때만 검색칸을 보여 준다 */
 const SEARCH_MIN = 5;
 

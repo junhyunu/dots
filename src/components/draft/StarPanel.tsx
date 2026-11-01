@@ -198,7 +198,7 @@ export default function StarPanel({ experience, onStory }: { experience: Experie
             </Button>
             {experience.status === "drafting" && (
               <Button onClick={() => confirmStar(id)}>
-                다음: 역량 키워드 정하기
+                다음: 역량 연결하기
                 <ArrowRight className="size-4" aria-hidden />
               </Button>
             )}

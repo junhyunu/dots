@@ -124,8 +124,14 @@ export const TASK_DEFS: { [T in TaskName]: TaskDef<T> } = {
   keyword: {
     promptKey: "keyword",
     effort: "medium",
-    buildMessage: ({ basic, star }) =>
-      join(basicBlock(basic), starBlock(star), competencyBlock(), "[요청]\n역량 키워드 후보를 2~4개 만들어 주세요."),
+    buildMessage: ({ basic, star, links }) =>
+      join(
+        basicBlock(basic),
+        starBlock(star),
+        competencyBlock(),
+        `[키워드를 쓸 역량]\n${links.map((l) => `- ${l.competencyId} (${l.role === "primary" ? "대표" : "보조"}) — 장면: ${l.scene || "(없음)"}`).join("\n")}`,
+        `[요청]\n위 역량마다 키워드를 하나씩, 모두 ${links.length}개 만들어 주세요.`,
+      ),
   },
   match: {
     promptKey: "match",

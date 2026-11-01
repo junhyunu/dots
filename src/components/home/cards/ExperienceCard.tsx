@@ -71,7 +71,7 @@ const FORMATS: { format: StarFormat; label: string }[] = [
   { format: "md", label: "MD" },
 ];
 
-/** STAR 원고를 파일로 내려받기 (브라우저 안에서 만들어 저장, 스토리는 넣지 않음) */
+/** 경험 문서(STAR 원고 + 스토리가 있으면 맨 아래에 모두)를 파일로 내려받기 (브라우저 안에서 만들어 저장) */
 function StarDownload({ item }: { item: ShowcaseExperience }) {
   const [busy, setBusy] = useState<StarFormat | null>(null);
   const [failed, setFailed] = useState(false);
@@ -89,7 +89,7 @@ function StarDownload({ item }: { item: ShowcaseExperience }) {
   };
   return (
     <section aria-labelledby={`dl-${item.id}`} className="border-t border-line px-5 py-4 sm:px-6">
-      <h4 id={`dl-${item.id}`} className="text-sm text-ink-soft">STAR 원고 내려받기</h4>
+      <h4 id={`dl-${item.id}`} className="text-sm text-ink-soft">문서로 내려받기</h4>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {FORMATS.map(({ format, label }) => (
           <button
@@ -97,7 +97,7 @@ function StarDownload({ item }: { item: ShowcaseExperience }) {
             type="button"
             onClick={() => run(format)}
             disabled={busy !== null}
-            aria-label={`STAR 원고 ${label} 파일로 내려받기`}
+            aria-label={`${item.basic.title} 문서를 ${label} 파일로 내려받기`}
             className="press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2.5 text-sm font-semibold disabled:cursor-wait sm:min-h-9"
           >
             {busy === format ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Download className="size-4" aria-hidden />}

@@ -1,7 +1,7 @@
 // 서비스 전체가 공유하는 데이터 구조. 브라우저(localStorage)에 그대로 저장된다.
 // 구조를 바꾸면 SCHEMA_VERSION을 올리고 store/migrations.ts에 변환을 추가한다.
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export type StageId = "situation" | "goal" | "action" | "result" | "learning";
 
@@ -14,7 +14,8 @@ export type CompetencyId =
   | "conflict"
   | "motivation";
 
-export type ExperienceStatus = "interviewing" | "drafting" | "keyword" | "matching" | "done";
+/** 진행 순서: 질문 → 원고 → 역량 연결 → 역량 키워드 → 완성 (v3에서 연결과 키워드 순서를 바꿈) */
+export type ExperienceStatus = "interviewing" | "drafting" | "matching" | "keyword" | "done";
 
 export interface ExperienceBasic {
   title: string;
@@ -79,6 +80,7 @@ export interface KeywordCandidate {
   sentence: string;
 }
 
+/** 연결한 역량마다 키워드 1개, 대표 역량 순서대로. selectedIndex = 대표 역량의 키워드 (domain/keywords.ts가 맞춤) */
 export interface KeywordSet {
   candidates: KeywordCandidate[];
   selectedIndex: number | null;
@@ -119,7 +121,7 @@ export interface Experience {
   star: StarDraft | null;
   keyword: KeywordSet | null;
   matches: CompetencyMatch[] | null;
-  /** 사용자가 "표에 추가"를 눌렀는지 */
+  /** 경험을 완성했는지 (역량 키워드 단계의 "경험 완성하기"). 완성한 경험만 홈·전체 역량 연결 목록에 나온다 */
   matchesConfirmed: boolean;
   stories: Story[];
 }

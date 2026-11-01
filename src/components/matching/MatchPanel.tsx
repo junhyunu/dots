@@ -1,7 +1,7 @@
 "use client";
 // 이 경험의 역량 연결: 대표 1개 + 보조 최대 2개. AI가 제안하고 사용자가 확인하거나 바꾼다.
-import { ArrowRight, CheckCircle2, Home, PenLine, Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+// 원고 다음 단계이고, 여기서 정한 역량으로 다음 단계에서 역량 키워드를 만든다.
+import { ArrowRight, RefreshCw } from "lucide-react";
 import { generate } from "@/lib/api";
 import { COMPETENCIES } from "@/lib/domain/competencies";
 import { starBody } from "@/lib/domain/context";
@@ -13,7 +13,6 @@ import { runTask, useAutoTask } from "@/lib/store/useTaskRunner";
 import AutoTextarea from "@/components/ui/AutoTextarea";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
-import { href } from "@/lib/mode";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 async function draftMatches(id: string) {
@@ -29,19 +28,17 @@ const ROLE_OPTIONS: { value: MatchRole | null; label: string }[] = [
   { value: null, label: "연결 안 함" },
 ];
 
-export default function MatchPanel({ experience, onStory }: { experience: Experience; onStory: () => void }) {
+export default function MatchPanel({ experience, onKeyword }: { experience: Experience; onKeyword: () => void }) {
   const { id, matches, matchesConfirmed } = experience;
   const setMatchRole = useAppStore((s) => s.setMatchRole);
   const updateMatchScene = useAppStore((s) => s.updateMatchScene);
   const confirmMatches = useAppStore((s) => s.confirmMatches);
-  const setView = useAppStore((s) => s.setView);
 
   const key = `${id}:match`;
   const status = useAutoTask(key, !!experience.star && matches === null, () => draftMatches(id));
   const secondaryCount = matches?.filter((m) => m.role === "secondary").length ?? 0;
   const primary = matches?.find((m) => m.role === "primary");
   const canConfirm = !!primary && !!matches?.every((m) => m.scene.trim());
-  const hasStory = experience.stories.some((s) => s.body);
 
   return (
     <div className="space-y-4">
@@ -88,7 +85,7 @@ export default function MatchPanel({ experience, onStory }: { experience: Experi
                       <p className={`font-semibold ${m ? "" : "text-ink-soft"}`}>{c.name}</p>
                       <p className="text-sm text-ink-faint">{c.description}</p>
                     </div>
-                    {/* 몽타주 Segmented Control: 세 칸 같은 너비, 선택 칸 = 흰 손잡이 */}
+                    {/* 몽타주 Segmented Control: 세 칸 같은 너비, 선택 칸 = 흰 손잡이. 둥글기 바깥 12px·안쪽 8px(= 바깥 − 여백 4px, 사용자 결정) */}
                     <div role="radiogroup" aria-label={`${c.name} 연결`} className="grid shrink-0 grid-cols-3 rounded-lg bg-ink/[0.06] p-1 sm:w-[17rem]">
                       {ROLE_OPTIONS.map((o) => {
                         const active = role === o.value;
@@ -103,7 +100,7 @@ export default function MatchPanel({ experience, onStory }: { experience: Experi
                             title={blocked ? `보조 역량은 최대 ${MAX_SECONDARY_COMPETENCIES}개예요` : undefined}
                             aria-describedby={blocked ? "secondary-full" : undefined}
                             onClick={() => setMatchRole(id, c.id, o.value)}
-                            className={`min-h-10 cursor-pointer whitespace-nowrap rounded-md px-2 text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:text-placeholder ${
+                            className={`min-h-10 cursor-pointer whitespace-nowrap rounded-[8px] px-2 text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:text-placeholder ${
                               active ? "bg-surface text-ink shadow-[0_1px_3px_rgb(23_23_23/0.12)]" : "text-ink-faint hover:text-ink"
                             }`}
                           >
@@ -132,40 +129,25 @@ export default function MatchPanel({ experience, onStory }: { experience: Experi
             })}
           </ul>
 
-          {matchesConfirmed ? (
-            <div className="rounded-xl border border-ok/30 bg-ok-soft p-4">
-              <p className="flex items-center gap-2 font-medium text-ok">
-                <CheckCircle2 className="size-4" aria-hidden />
-                경험을 완성했어요. 여기서 고치면 홈에도 바로 반영돼요.
-              </p>
-              {!hasStory && <p className="mt-1 pl-6 text-[15px] text-ink-soft">이 경험을 자기소개서 글로 다듬어 볼까요?</p>}
-              {/* 주요 행동은 스토리 하나 (서비스의 마지막 결과물), 나머지는 보조 버튼 */}
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button onClick={onStory}>
-                  <PenLine className="size-4" aria-hidden />
-                  {hasStory ? "스토리 보기" : "스토리로 완성하기"}
-                  <ArrowRight className="size-4" aria-hidden />
-                </Button>
-                <Button variant="secondary" onClick={() => setView("new")}>
-                  <Plus className="size-4" aria-hidden />
-                  새 경험 정리하기
-                </Button>
-                <Link
-                  href={href("/")}
-                  className="press inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-surface px-5 font-semibold"
-                >
-                  <Home className="size-4" aria-hidden />
-                  홈에서 보기
-                </Link>
-              </div>
-            </div>
-          ) : (
+          {experience.status === "matching" ? (
             <div className="flex items-center justify-end gap-3 pt-2">
               {!primary && <p className="text-sm text-ink-faint">대표 역량을 하나 골라 주세요.</p>}
               {primary && !canConfirm && <p className="text-sm text-ink-faint">연결한 역량마다 장면을 적어 주세요.</p>}
               <Button disabled={!canConfirm} onClick={() => confirmMatches(id)}>
-                <CheckCircle2 className="size-4" aria-hidden />
-                경험 완성하기
+                다음: 역량 키워드
+                <ArrowRight className="size-4" aria-hidden />
+              </Button>
+            </div>
+          ) : (
+            // 키워드 단계 이후: 여기서 바꾸면 키워드도 맞춰진다 (새로 연결한 역량은 키워드 단계에서 만듦)
+            <div className="flex flex-col gap-3 rounded-xl bg-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[15px] text-ink-soft break-keep">
+                {matchesConfirmed ? "완성한 경험이라 여기서 고치면 홈에도 바로 반영돼요. " : ""}
+                역량을 바꾸면 키워드도 맞춰져요. 새로 연결한 역량의 키워드는 역량 키워드 단계에서 만들어요.
+              </p>
+              <Button variant="secondary" size="sm" disabled={!canConfirm} onClick={() => { confirmMatches(id); onKeyword(); }}>
+                역량 키워드로
+                <ArrowRight className="size-4" aria-hidden />
               </Button>
             </div>
           )}

@@ -18,6 +18,7 @@ import {
   type StarDraft,
   type Story,
 } from "@/lib/domain/types";
+import { alignKeywords, mergeKeywords, missingKeywordComps } from "@/lib/domain/keywords";
 import { MAX_SECONDARY_COMPETENCIES, STAGE_ORDER, nextStage } from "@/lib/domain/stages";
 import { migrate } from "./migrations";
 import { DEMO } from "@/lib/mode";
@@ -48,19 +49,21 @@ interface Actions {
 
   setStar: (id: string, star: Omit<StarDraft, "generatedAt" | "edited">) => void;
   editStar: (id: string, patch: Partial<Omit<StarDraft, "generatedAt" | "edited">>) => void;
-  /** 원고 확인 → 역량 키워드 단계로 */
+  /** 원고 확인 → 역량 연결 단계로 */
   confirmStar: (id: string) => void;
-
-  setKeywords: (id: string, candidates: KeywordCandidate[]) => void;
-  selectKeyword: (id: string, index: number) => void;
-  editKeyword: (id: string, index: number, patch: Partial<KeywordCandidate>) => void;
-  confirmKeyword: (id: string) => void;
 
   setMatches: (id: string, matches: CompetencyMatch[]) => void;
   /** 역량의 역할 바꾸기 (null = 연결 해제). 대표는 1개, 보조는 최대 2개를 지킨다 */
   setMatchRole: (id: string, competencyId: CompetencyId, role: MatchRole | null) => void;
   updateMatchScene: (id: string, competencyId: CompetencyId, scene: string) => void;
+  /** 역량 연결 확인 → 역량 키워드 단계로 */
   confirmMatches: (id: string) => void;
+
+  /** 받은 키워드를 역량별로 넣거나 바꾼다 (연결한 역량 순서로 맞춤) */
+  setKeywords: (id: string, candidates: KeywordCandidate[]) => void;
+  editKeyword: (id: string, competencyId: CompetencyId, patch: Pick<KeywordCandidate, "keyword" | "sentence">) => void;
+  /** 경험 완성: 연결한 역량마다 키워드가 있어야 한다 */
+  completeExperience: (id: string) => void;
 
   createStory: (id: string, options: { prompt?: string; charLimit?: number }) => string;
   addStoryRound: (id: string, storyId: string, questions: NewQuestion[]) => void;
@@ -73,6 +76,8 @@ interface Actions {
 export type Store = AppState & { view: View } & Actions;
 
 const now = () => new Date().toISOString();
+/** 역량 연결에서 "연결 안 함"으로 바꾼 역량의 장면·관련 행동·키워드 (expId:competencyId). 저장하지 않는다 */
+const parked = new Map<string, { match: CompetencyMatch; keyword?: KeywordCandidate }>();
 // randomUUID는 https·localhost에서만 있다. 휴대폰으로 개발 서버(http://IP:3000)를 열 때는 없어서
 // getRandomValues로 같은 모양(UUID v4)을 만든다
 const uid = (): string => {
@@ -263,48 +268,48 @@ export const useAppStore = create<Store>()(
             if (e.star) e.star = { ...e.star, ...patch, edited: true };
           }),
 
-        confirmStar: (id) => edit(id, (e) => void (e.status === "drafting" && (e.status = "keyword"))),
-
-        setKeywords: (id, candidates) =>
-          edit(id, (e) => {
-            e.keyword = { candidates, selectedIndex: candidates.length ? 0 : null };
-          }),
-
-        selectKeyword: (id, index) => edit(id, (e) => void (e.keyword && (e.keyword.selectedIndex = index))),
-
-        editKeyword: (id, index, patch) =>
-          edit(id, (e) => {
-            const c = e.keyword?.candidates[index];
-            if (c) Object.assign(c, patch);
-          }),
-
-        confirmKeyword: (id) => edit(id, (e) => void (e.status === "keyword" && (e.status = "matching"))),
+        confirmStar: (id) => edit(id, (e) => void (e.status === "drafting" && (e.status = "matching"))),
 
         setMatches: (id, matches) =>
           edit(id, (e) => {
+            for (const k of [...parked.keys()]) if (k.startsWith(`${id}:`)) parked.delete(k);
             e.matches = matches;
-            e.matchesConfirmed = false;
+            e.keyword = alignKeywords(e.keyword, e.matches);
           }),
 
         setMatchRole: (id, competencyId, role) =>
           edit(id, (e) => {
             const list = (e.matches ??= []);
+            const park = (m: CompetencyMatch) =>
+              parked.set(`${id}:${m.competencyId}`, { match: { ...m }, keyword: e.keyword?.candidates.find((c) => c.competencyId === m.competencyId) });
             if (role === null) {
+              const gone = list.find((m) => m.competencyId === competencyId);
+              if (gone) park(gone);
               e.matches = list.filter((m) => m.competencyId !== competencyId);
+              e.keyword = alignKeywords(e.keyword, e.matches);
               return;
             }
             // 새 대표를 고르면 기존 대표는 보조로 내려간다
             if (role === "primary") for (const m of list) if (m.role === "primary") m.role = "secondary";
             const existing = list.find((m) => m.competencyId === competencyId);
             if (existing) existing.role = role;
-            else list.push({ competencyId, role, scene: "", actionRefs: [] });
+            else {
+              // 연결 안 함으로 바꿨던 역량을 다시 켜면 장면·관련 행동·키워드를 되살린다 (새로고침 전까지, 사용자 결정 A)
+              const back = parked.get(`${id}:${competencyId}`);
+              parked.delete(`${id}:${competencyId}`);
+              list.push(back ? { ...back.match, role } : { competencyId, role, scene: "", actionRefs: [] });
+              if (back?.keyword) e.keyword = mergeKeywords(e.keyword, [back.keyword]);
+            }
             // 보조가 넘치면 방금 바꾼 역량이 아닌 것 중 가장 뒤의 보조를 뺀다
             const extra = list.filter((m) => m.role === "secondary" && m.competencyId !== competencyId);
             const overflow = list.filter((m) => m.role === "secondary").length - MAX_SECONDARY_COMPETENCIES;
             if (overflow > 0) {
-              const drop = new Set(extra.slice(-overflow).map((m) => m.competencyId));
+              const dropped = extra.slice(-overflow);
+              dropped.forEach(park);
+              const drop = new Set(dropped.map((m) => m.competencyId));
               e.matches = list.filter((m) => !drop.has(m.competencyId));
             }
+            e.keyword = alignKeywords(e.keyword, e.matches);
           }),
 
         updateMatchScene: (id, competencyId, scene) =>
@@ -316,6 +321,24 @@ export const useAppStore = create<Store>()(
         confirmMatches: (id) =>
           edit(id, (e) => {
             if (!e.matches?.some((m) => m.role === "primary")) return;
+            if (e.status === "matching") e.status = "keyword";
+            e.keyword = alignKeywords(e.keyword, e.matches);
+          }),
+
+        setKeywords: (id, candidates) =>
+          edit(id, (e) => {
+            e.keyword = alignKeywords(mergeKeywords(e.keyword, candidates), e.matches);
+          }),
+
+        editKeyword: (id, competencyId, patch) =>
+          edit(id, (e) => {
+            const c = e.keyword?.candidates.find((x) => x.competencyId === competencyId);
+            if (c) Object.assign(c, patch);
+          }),
+
+        completeExperience: (id) =>
+          edit(id, (e) => {
+            if (!e.matches?.some((m) => m.role === "primary") || missingKeywordComps(e.keyword, e.matches).length) return;
             e.matchesConfirmed = true;
             e.status = "done";
           }),

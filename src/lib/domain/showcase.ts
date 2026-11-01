@@ -1,5 +1,5 @@
 // 홈 카드에 보여줄 경험 결과물. 실제 경험(완성된 것)과 예시를 같은 모양으로 다룬다.
-import type { CompetencyId, CompetencyMatch, Experience, KeywordCandidate, KeywordSet, StarDraft } from "./types";
+import type { CompetencyId, CompetencyMatch, Experience, KeywordCandidate, KeywordSet, StarDraft, Story } from "./types";
 
 export interface ShowcaseExperience {
   id: string;
@@ -9,9 +9,11 @@ export interface ShowcaseExperience {
   keyword: KeywordSet | null;
   matches: CompetencyMatch[];
   hasStory?: boolean;
+  /** 글까지 만든 스토리 (내려받기 문서의 맨 아래에 넣음). 예시에는 없다 */
+  stories?: Pick<Story, "prompt" | "charLimit" | "subtitle" | "body">[];
 }
 
-/** 완성한(역량 연결까지 마친) 실제 경험만 홈에 보여준다 */
+/** 완성한(역량 키워드까지 마친) 실제 경험만 홈에 보여준다 */
 export function toShowcase(exp: Experience): ShowcaseExperience | null {
   if (!exp.matchesConfirmed || !exp.star || !exp.matches?.length) return null;
   return {
@@ -21,6 +23,7 @@ export function toShowcase(exp: Experience): ShowcaseExperience | null {
     keyword: exp.keyword,
     matches: exp.matches,
     hasStory: exp.stories.some((s) => s.body),
+    stories: exp.stories.filter((s) => s.body.trim()).map(({ prompt, charLimit, subtitle, body }) => ({ prompt, charLimit, subtitle, body })),
   };
 }
 

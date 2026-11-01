@@ -10,22 +10,22 @@ import MatchPanel from "@/components/matching/MatchPanel";
 import StoryPanel from "@/components/story/StoryPanel";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
 
-export type Step = "interview" | "star" | "keyword" | "match" | "story";
+export type Step = "interview" | "star" | "match" | "keyword" | "story";
 
 const STEPS: { id: Step; label: string; short: string }[] = [
   { id: "interview", label: "질문", short: "질문" },
   { id: "star", label: "STAR 원고", short: "원고" },
-  { id: "keyword", label: "역량 키워드", short: "키워드" },
   { id: "match", label: "역량 연결", short: "역량" },
+  { id: "keyword", label: "역량 키워드", short: "키워드" },
   { id: "story", label: "스토리", short: "스토리" },
 ];
 
 const STATUS_STEP: Record<ExperienceStatus, Step> = {
   interviewing: "interview",
   drafting: "star",
-  keyword: "keyword",
   matching: "match",
-  done: "match",
+  keyword: "keyword",
+  done: "keyword",
 };
 
 export default function ExperienceWorkspace({ experience, initialStep }: { experience: Experience; initialStep?: Step }) {
@@ -122,8 +122,8 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
       <div className="mt-6">
         {step === "interview" && <InterviewPanel experience={experience} />}
         {step === "star" && <StarPanel experience={experience} onStory={() => goTo("story")} />}
-        {step === "keyword" && <KeywordPanel experience={experience} />}
-        {step === "match" && <MatchPanel experience={experience} onStory={() => goTo("story")} />}
+        {step === "match" && <MatchPanel experience={experience} onKeyword={() => goTo("keyword")} />}
+        {step === "keyword" && <KeywordPanel experience={experience} onStory={() => goTo("story")} onMatch={() => goTo("match")} />}
         {step === "story" && <StoryPanel experience={experience} onContinue={() => goTo(STATUS_STEP[experience.status])} />}
       </div>
     </article>

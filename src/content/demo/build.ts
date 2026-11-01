@@ -5,6 +5,7 @@ import { COMPETENCY_IDS } from "@/lib/domain/competencies";
 import { STAGE_ORDER } from "@/lib/domain/stages";
 import { SCHEMA_VERSION, type AppState, type CompetencyId, type CompetencyMatch, type Experience, type QARound, type StageId, type StageLog } from "@/lib/domain/types";
 import { DEMO_POOL, type DemoEntry } from "./pool";
+import { alignKeywords } from "@/lib/domain/keywords";
 
 export const DEFAULT_SEED = 1;
 export const SEED_KEY = "dots:demo:seed";
@@ -84,15 +85,16 @@ function toExperience(entry: DemoEntry, index: number, links: { id: CompetencyId
   if (level === "interviewing") return base;
 
   base.star = { ...structuredClone(entry.star), generatedAt: at, edited: false };
-  const candidates = entry.comps.map(([competencyId, keyword, sentence]) => ({ competencyId, keyword, sentence }));
-  const primaryId = links.find((l) => l.role === "primary")?.id;
-  base.keyword = { candidates, selectedIndex: Math.max(0, candidates.findIndex((c) => c.competencyId === primaryId)) };
+  // 역량 연결 전: 원고까지만 (키워드는 역량 연결 뒤에 만든다)
   if (level === "matching") return base;
 
   base.matches = links.map(({ id: cid, role }) => {
     const comp = entry.comps.find((c) => c[0] === cid)!;
     return { competencyId: cid, role, scene: comp[3], actionRefs: comp[4].map((n) => n - 1) };
   });
+  // 키워드 = 연결한 역량마다 1개, 대표 역량 먼저
+  const candidates = entry.comps.map(([competencyId, keyword, sentence]) => ({ competencyId, keyword, sentence }));
+  base.keyword = alignKeywords({ candidates, selectedIndex: null }, base.matches);
   base.matchesConfirmed = true;
   if (entry.story) {
     base.stories = [{ id: `${id}-story`, prompt: entry.story.prompt, checked: true, followups: [], subtitle: entry.story.subtitle, body: entry.story.body, createdAt: at, updatedAt: at }];

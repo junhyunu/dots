@@ -73,7 +73,7 @@ export default function CompetencyMatrix() {
       <div className="space-y-6">
         {header}
         <div className="rounded-2xl border border-dashed border-line-strong bg-surface p-8 text-center">
-          <p className="text-ink-soft">아직 표에 추가한 경험이 없어요. 경험을 정리하고 ‘역량 연결’ 단계에서 완성해 주세요.</p>
+          <p className="text-ink-soft">아직 완성한 경험이 없어요. 경험을 정리하고 마지막 ‘역량 키워드’ 단계에서 완성해 주세요.</p>
           <Button className="mt-4" onClick={() => setView("new")}>
             <Plus className="size-4" aria-hidden />새 경험 정리하기
           </Button>

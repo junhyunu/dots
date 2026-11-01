@@ -17,7 +17,7 @@ export function normalizeMatches(raw: TaskOutput<"match">["matches"], actionCoun
   }));
 }
 
-/** 완성된(매칭표에 추가한) 경험이 연결된 역량 */
+/** 완성한 경험이 연결된 역량 */
 export function linkedMatch(exp: Experience, cid: CompetencyId): CompetencyMatch | null {
   if (!exp.matchesConfirmed) return null;
   return exp.matches?.find((m) => m.competencyId === cid) ?? null;

@@ -7,6 +7,7 @@ import type { StageId } from "@/lib/domain/types";
 import { GenerateError } from "@/lib/api";
 import { consumeFail } from "./failSwitch";
 import { DEMO_POOL } from "./pool";
+import { competencyName } from "@/lib/domain/competencies";
 
 export const DEMO_BASIC = { title: "학과 축제 먹거리 부스 운영", period: "2025년 5월, 축제 3일", role: "부스 운영 총괄 (5명 팀)" };
 
@@ -155,15 +156,20 @@ function respond<T extends TaskName>(task: T, payload: TaskPayloads[T]): TaskOut
       out = regenerate ? { ...regenerate.current, [regenerate.block]: fresh[regenerate.block] } : fresh;
       break;
     }
-    case "keyword":
+    case "keyword": {
+      // 받은 역량마다 1개: 시나리오·가상 경험이면 그 내용, 아니면 역량 이름으로 만든 일반 문장
+      const { links } = p as TaskPayloads["keyword"];
       out = {
-        candidates: scenario
-          ? KEYWORDS
-          : entry
-            ? entry.comps.slice(0, 3).map(([competencyId, keyword, sentence]) => ({ competencyId, keyword, sentence }))
-            : [{ competencyId: "problem_solving", keyword: "끝까지 원인 찾기", sentence: "문제를 덮지 않고 원인을 찾아 해결하는 힘" }],
+        candidates: links.map(({ competencyId, scene }) => {
+          const fromScenario = scenario ? KEYWORDS.find((k) => k.competencyId === competencyId) : undefined;
+          const fromPool = entry?.comps.find((c) => c[0] === competencyId);
+          if (fromScenario) return fromScenario;
+          if (fromPool) return { competencyId, keyword: fromPool[1], sentence: fromPool[2] };
+          return { competencyId, keyword: `${competencyName(competencyId)}의 순간`, sentence: `${scene.trim() || "이 경험"}에서 드러난 ${competencyName(competencyId)} 역량` };
+        }),
       };
       break;
+    }
     case "match":
       out = {
         matches: scenario
