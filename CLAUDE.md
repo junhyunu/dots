@@ -258,6 +258,13 @@ Dots/
 - 줄바꿈은 `.gitattributes`로 LF 통일
 - 올리기 전 확인: 타입 검사·빌드, 올라갈 파일에 키 문자열(`sk-ant-`)이 없는지
 
+## 9-2. 배포 (Vercel)
+
+- Vercel 팀 `jun-a054`의 프로젝트 `dots`, GitHub `junhyunu/dots`(비공개)와 연결 → **main에 올리면 자동 배포**. 주소: https://dots-phi-black.vercel.app (2026-11-01 UT용으로 처음 배포)
+- 환경변수(Production, Secret): `ANTHROPIC_API_KEY`, `CLAUDE_MODEL`(claude-sonnet-5-5), `UT_SHEET_URL`. 바꾸면 다시 배포해야 반영
+- 배포 주소는 누구나 열 수 있어 실제 화면에서 AI를 쓰면 키로 요금이 나간다. UT가 끝나면 배포를 내리거나 키를 바꾼다
+- 이 컴퓨터의 `.vercel/`(연결 정보)·`.env.local`의 `VERCEL_OIDC_TOKEN`은 Vercel이 만든 것. 둘 다 저장소에 올리지 않는다
+
 ## 10. 개발 명령
 
 ```bash
