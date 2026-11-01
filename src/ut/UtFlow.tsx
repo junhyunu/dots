@@ -6,7 +6,7 @@ import { DotsWordmark } from "@/components/brand/DotsLogo";
 import Button from "@/components/ui/Button";
 import { copyText } from "@/lib/domain/text";
 import { Card, Choice, Likert, TextField } from "./fields";
-import { DEVICES, EXTRA_ITEMS, LIKERT_ITEMS, PREV_TIMES, SITUATIONS, STUCK_STEPS, TASK_GUIDE } from "./questions";
+import { DEVICES, EXTRA_ITEMS, LIKERT_ITEMS, PRE_LIKERT_GUIDE, PREV_TIME_LABEL, PREV_TIMES, SERVICE_INTRO, SITUATIONS, STUCK_STEPS, TASK_GUIDE } from "./questions";
 import { readUt, rowText, sheetRow, useUt, writeUt } from "./state";
 
 const goWork = () => window.location.assign("/ut/work?new=1");
@@ -61,12 +61,18 @@ function Pre() {
   return (
     <>
       <Card title="시작 전 질문">
+        <p className="text-[15px] leading-relaxed break-keep text-ink-soft">{SERVICE_INTRO}</p>
         <TextField id="ut-nick" label="닉네임" value={ut.nickname} onChange={(v) => writeUt((s) => ({ ...s, nickname: v }))} placeholder="실명 말고 별명으로 적어 주세요" />
         <Choice name="situation" label="지금 상황" options={SITUATIONS} value={p.situation} onChange={(v) => set({ situation: v })} />
         {p.situation === "기타" && <TextField id="ut-sit" label="기타 상황" value={p.situationOther} onChange={(v) => set({ situationOther: v })} />}
-        <Choice name="prevTime" label="기존에 경험 하나를 정리하는 데 보통 얼마나 걸렸나요?" options={PREV_TIMES} value={p.prevTime} onChange={(v) => set({ prevTime: v })} />
+        <Choice name="prevTime" label={PREV_TIME_LABEL} options={PREV_TIMES} value={p.prevTime} onChange={(v) => set({ prevTime: v })} />
       </Card>
-      <Card title="지금까지 경험을 정리해 온 방식을 떠올리며 답해 주세요">
+      <Card title="평소 경험을 정리할 때를 떠올리며 답해 주세요">
+        <div className="space-y-1 text-[15px] leading-relaxed break-keep text-ink-soft">
+          {PRE_LIKERT_GUIDE.map((t) => (
+            <p key={t}>{t}</p>
+          ))}
+        </div>
         {LIKERT_ITEMS.map((q, i) => (
           <Likert key={q} name={`pre-${i}`} label={`${i + 1}. ${q}`} value={p.likert[i]} onChange={(v) => set({ likert: p.likert.map((x, j) => (j === i ? v : x)) })} />
         ))}
