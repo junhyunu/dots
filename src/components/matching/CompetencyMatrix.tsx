@@ -110,7 +110,8 @@ export default function CompetencyMatrix() {
         {groups.map(({ c, rows }) => {
           const primaries = rows.filter((r) => r.match.role === "primary").length;
           return (
-            <details key={c.id} id={sectionId(c.id)} open className="group scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-subtle lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
+            // 처음엔 모두 접힘(다 열려 있으면 역량끼리 구분이 안 됨, 사용자 결정). 여러 칸을 함께 열 수 있고, 열린 칸은 테두리를 진하게 해 역량 경계를 보여 준다
+            <details key={c.id} id={sectionId(c.id)} className="group scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-subtle open:border-ink-faint/40 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
               <summary className="flex min-h-14 cursor-pointer list-none items-start gap-3 rounded-2xl px-4 py-3 sm:px-5 [&::-webkit-details-marker]:hidden">
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-baseline gap-x-2">

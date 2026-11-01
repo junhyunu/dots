@@ -10,6 +10,7 @@ import { runTask, useAutoTask, useTask } from "@/lib/store/useTaskRunner";
 import AutoTextarea from "@/components/ui/AutoTextarea";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const BLOCKS: { id: StarBlock; letter: string; name: string }[] = [
   { id: "situation", letter: "S", name: "상황" },
@@ -169,8 +170,9 @@ export default function StarPanel({ experience, onStory }: { experience: Experie
             variant="secondary"
             size="sm"
             loading={status?.state === "loading"}
-            onClick={() => {
-              if (!star.edited || window.confirm("직접 고친 내용이 사라져요. 원고 전체를 다시 생성할까요?")) void runTask(key, () => draftStar(id));
+            onClick={async () => {
+              const ok = !star.edited || (await confirmAction({ title: "원고 전체를 다시 생성할까요?", body: "직접 고친 내용이 사라져요.", confirmLabel: "다시 생성" }));
+              if (ok) void runTask(key, () => draftStar(id));
             }}
           >
             {status?.state !== "loading" && <RefreshCw className="size-4" aria-hidden />}

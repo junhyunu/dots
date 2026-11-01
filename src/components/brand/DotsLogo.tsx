@@ -38,11 +38,12 @@ export default function DotsLogo({ size = 28, className = "" }: { size?: number 
 }
 
 /** 서비스 이름: "Dots"의 o 자리에 로고 원을 넣는다 (글자 크기에 맞춰 em 단위). 화면 읽기 프로그램에는 "Dots"로 읽힌다 */
-export function DotsWordmark() {
+// large = 홈 상단 바(휴대폰 20px · PC 24px, 사용자 결정 2026-11-01). 작업 화면은 기본(18px) 그대로
+export function DotsWordmark({ large = false }: { large?: boolean }) {
   return (
     // 영문과 한글은 크기가 달라 가운데 정렬하면 한글이 떠 보인다 → 글자 아랫선(baseline)에 맞춘다
-    <span className="inline-flex items-baseline gap-1.5">
-      <span className="text-lg font-bold tracking-tight">
+    <span className={`inline-flex items-baseline ${large ? "gap-2" : "gap-1.5"}`}>
+      <span className={`font-bold tracking-tight ${large ? "text-xl sm:text-2xl" : "text-lg"}`}>
         <span className="sr-only">Dots</span>
         <span aria-hidden className="inline-flex items-baseline">
           D
@@ -51,7 +52,7 @@ export function DotsWordmark() {
           ts
         </span>
       </span>
-      <span className="text-xs text-ink-faint">닷츠</span>
+      <span className={`text-ink-faint ${large ? "text-[13px] sm:text-sm" : "text-xs"}`}>닷츠</span>
     </span>
   );
 }

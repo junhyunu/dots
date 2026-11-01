@@ -47,7 +47,7 @@ export default function HomePage() {
       <header className="sticky top-(--top-offset) z-20 border-b border-line bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href={href("/")} aria-label="Dots 닷츠 홈" className="flex items-center rounded-lg">
-            <DotsWordmark />
+            <DotsWordmark large />
           </Link>
           <ThemeToggle />
         </div>

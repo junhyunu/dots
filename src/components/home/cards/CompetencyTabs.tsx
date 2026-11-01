@@ -34,7 +34,8 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
     }
   };
   const SelectedIcon = COMPETENCY_ICONS[selected];
-  const panel = "pointer-events-auto rounded-2xl border border-line bg-surface/90 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop-blur";
+  // 그림자는 화면 끝까지의 간격(16px) 안에서 다 흐려지게 짧게: 아래 16px·옆 10px (길면 화면 끝에서 잘려 보임)
+  const panel = "pointer-events-auto rounded-2xl border border-line bg-surface/90 shadow-[0_6px_16px_-6px_rgb(0_0_0/0.35)] backdrop-blur";
 
   return (
     <nav

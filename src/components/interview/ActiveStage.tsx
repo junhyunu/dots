@@ -119,13 +119,16 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
             label={open.kind === "followup" ? `추가 질문 ${open.items.length}개 — 비어 있거나 모호한 부분만 여쭤요` : undefined}
           />
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant="ghost"
-              onClick={() => submit(true)}
-              title="지금까지 답한 내용으로 이 단계를 마칩니다"
-            >
-              충분해요, 다음으로
-            </Button>
+            {/* 추가 질문에서만: 첫 질문은 "기억 안 남"으로 넘긴다 (첫 질문에서 넘기면 빈 단계가 생김, 사용자 결정) */}
+            {open.kind === "followup" && (
+              <Button
+                variant="ghost"
+                onClick={() => submit(true)}
+                title="지금까지 답한 내용으로 이 단계를 마칩니다"
+              >
+                충분해요, 다음으로
+              </Button>
+            )}
             <Button disabled={!canSubmit} onClick={() => submit()}>
               <Send className="size-4" aria-hidden />
               답변 제출

@@ -73,7 +73,16 @@ interface Actions {
 export type Store = AppState & { view: View } & Actions;
 
 const now = () => new Date().toISOString();
-const uid = () => crypto.randomUUID();
+// randomUUID는 https·localhost에서만 있다. 휴대폰으로 개발 서버(http://IP:3000)를 열 때는 없어서
+// getRandomValues로 같은 모양(UUID v4)을 만든다
+const uid = (): string => {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+};
 
 function emptyStage(status: StageLog["status"]): StageLog {
   return { status, rounds: [], summary: null, summaryEdited: false };

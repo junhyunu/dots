@@ -220,6 +220,9 @@ export default function AppShell() {
   const view = useAppStore((s) => s.view);
   const experience = useActiveExperience();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // 메뉴 아이콘의 파란 점: 지금 보고 있는 경험 말고 작업 중인 경험이 더 있을 때만 (사용자 결정 A)
+  const viewingId = view === "experience" ? experience?.id : undefined;
+  const waiting = useAppStore((s) => Object.values(s.experiences).filter((e) => e.status !== "done" && e.id !== viewingId).length);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -253,15 +256,16 @@ export default function AppShell() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="메뉴 열기"
-            className="flex size-11 cursor-pointer items-center justify-center rounded-lg hover:bg-subtle"
+            aria-label={waiting ? `메뉴 열기, 작업 중인 경험 ${waiting}개` : "메뉴 열기"}
+            className="relative flex size-11 cursor-pointer items-center justify-center rounded-lg hover:bg-subtle"
           >
-            <Menu className="size-5" aria-hidden />
+            <Menu className="size-6" aria-hidden />
+            {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-primary ring-2 ring-bg" />}
           </button>
           <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex flex-1 items-center rounded-lg">
             <DotsWordmark />
           </Link>
-          <ThemeToggle />
+          <ThemeToggle large />
         </header>
 
         {drawerOpen && (

@@ -8,6 +8,7 @@ import StarPanel from "@/components/draft/StarPanel";
 import KeywordPanel from "@/components/draft/KeywordPanel";
 import MatchPanel from "@/components/matching/MatchPanel";
 import StoryPanel from "@/components/story/StoryPanel";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 export type Step = "interview" | "star" | "keyword" | "match" | "story";
 
@@ -50,8 +51,14 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
     if (target !== step) goTo(target);
   }, [experience.status, lastStatus, step]);
 
-  const remove = () => {
-    if (window.confirm(`'${experience.basic.title}' 경험을 삭제할까요? 되돌릴 수 없어요.`)) deleteExperience(experience.id);
+  const remove = async () => {
+    const ok = await confirmAction({
+      title: "이 경험을 삭제할까요?",
+      body: `'${experience.basic.title}' 경험이 사라지고 되돌릴 수 없어요.`,
+      confirmLabel: "삭제",
+      tone: "danger",
+    });
+    if (ok) deleteExperience(experience.id);
   };
 
   const { basic } = experience;
@@ -72,7 +79,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
           aria-label="이 경험 삭제"
           className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-faint hover:bg-danger-soft hover:text-danger"
         >
-          <Trash2 className="size-4" aria-hidden />
+          <Trash2 className="size-5" aria-hidden />
         </button>
       </header>
 

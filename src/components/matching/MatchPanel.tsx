@@ -14,6 +14,7 @@ import AutoTextarea from "@/components/ui/AutoTextarea";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
 import { href } from "@/lib/mode";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 async function draftMatches(id: string) {
   const exp = getStore().experiences[id];
@@ -56,8 +57,9 @@ export default function MatchPanel({ experience, onStory }: { experience: Experi
             variant="secondary"
             size="sm"
             loading={status?.state === "loading"}
-            onClick={() => {
-              if (window.confirm("역량 연결을 새로 제안받을까요? 지금 고친 내용은 사라져요.")) void runTask(key, () => draftMatches(id));
+            onClick={async () => {
+              const ok = await confirmAction({ title: "역량 연결을 새로 제안받을까요?", body: "지금 고친 내용은 사라져요.", confirmLabel: "다시 제안받기" });
+              if (ok) void runTask(key, () => draftMatches(id));
             }}
           >
             {status?.state !== "loading" && <RefreshCw className="size-4" aria-hidden />}

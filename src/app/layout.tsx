@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { THEME_SCRIPT } from "@/components/brand/ThemeToggle";
+import ConfirmHost from "@/components/ui/ConfirmDialog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,7 +27,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        {children}
+        <ConfirmHost />
+      </body>
     </html>
   );
 }

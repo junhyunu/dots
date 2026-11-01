@@ -11,6 +11,7 @@ import { runTask, useAutoTask } from "@/lib/store/useTaskRunner";
 import AutoTextarea from "@/components/ui/AutoTextarea";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 async function draftKeywords(id: string) {
   const exp = getStore().experiences[id];
@@ -54,8 +55,9 @@ export default function KeywordPanel({ experience }: { experience: Experience })
             variant="secondary"
             size="sm"
             loading={status?.state === "loading"}
-            onClick={() => {
-              if (window.confirm("키워드 후보를 새로 만들까요? 지금 후보와 고친 내용은 사라져요.")) {
+            onClick={async () => {
+              const ok = await confirmAction({ title: "키워드 후보를 새로 만들까요?", body: "지금 후보와 고친 내용은 사라져요.", confirmLabel: "새로 만들기" });
+              if (ok) {
                 setViewing(0);
                 setEditing(false);
                 void runTask(key, () => draftKeywords(id));

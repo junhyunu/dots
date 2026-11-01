@@ -17,6 +17,7 @@ import AutoTextarea from "@/components/ui/AutoTextarea";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
 import { href } from "@/lib/mode";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const LIMIT_PRESETS = [500, 700, 1000, 1500];
 
@@ -234,8 +235,9 @@ function StoryFlow({ experience, story }: { experience: Experience; story: Story
               variant="ghost"
               size="sm"
               loading={writeStatus?.state === "loading"}
-              onClick={() => {
-                if (window.confirm("이 글을 새로 쓸까요? 직접 고친 내용은 사라져요.")) void runTask(writeKey, () => writeStory(id, story.id));
+              onClick={async () => {
+                const ok = await confirmAction({ title: "이 글을 새로 쓸까요?", body: "직접 고친 내용은 사라져요.", confirmLabel: "새로 쓰기" });
+                if (ok) void runTask(writeKey, () => writeStory(id, story.id));
               }}
             >
               {writeStatus?.state !== "loading" && <RefreshCw className="size-3.5" aria-hidden />}
@@ -246,7 +248,9 @@ function StoryFlow({ experience, story }: { experience: Experience; story: Story
             variant="ghost"
             size="sm"
             aria-label="이 글 삭제"
-            onClick={() => window.confirm("이 글을 삭제할까요?") && deleteStory(id, story.id)}
+            onClick={async () => {
+              if (await confirmAction({ title: "이 글을 삭제할까요?", body: "되돌릴 수 없어요.", confirmLabel: "삭제", tone: "danger" })) deleteStory(id, story.id);
+            }}
           >
             <Trash2 className="size-3.5" aria-hidden />
           </Button>

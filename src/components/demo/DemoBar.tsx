@@ -7,6 +7,7 @@ import { DEFAULT_SEED } from "@/content/demo/build";
 import { FAIL_EVENT, isFailArmed, setFailArmed } from "@/content/demo/failSwitch";
 import { href } from "@/lib/mode";
 import { currentSeed, loadDemo } from "./demoState";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 // 모바일은 위에 고정된 띠가 화면을 덜 가리도록 아이콘만 (이름은 화면 읽기 프로그램에 그대로 읽힘)
 const btn = "press inline-flex min-h-11 min-w-11 justify-center sm:min-h-9 sm:min-w-0 cursor-pointer items-center gap-1 rounded-lg border border-bg/25 px-2.5 text-sm font-semibold";
@@ -34,8 +35,8 @@ export default function DemoBar() {
       root.style.removeProperty("--top-offset");
     };
   }, []);
-  const apply = (next: number, ask: string) => {
-    if (!window.confirm(ask)) return;
+  const apply = async (next: number, title: string, confirmLabel: string) => {
+    if (!(await confirmAction({ title, body: "시연 중 만든 경험도 사라져요.", confirmLabel }))) return;
     loadDemo(next);
     setSeed(next);
   };
@@ -54,11 +55,11 @@ export default function DemoBar() {
             <PenLine className="size-3.5" aria-hidden />
             <span className={label}>새 경험 시연</span>
           </Link>
-          <button type="button" className={btn} onClick={() => apply(Math.floor(Math.random() * 9998) + 2, "역량별 경험 수를 새로 섞을까요? 시연 중 만든 경험도 사라져요.")}>
+          <button type="button" className={btn} onClick={() => void apply(Math.floor(Math.random() * 9998) + 2, "역량별 경험 수를 새로 섞을까요?", "다시 섞기")}>
             <Shuffle className="size-3.5" aria-hidden />
             <span className={label}>다시 섞기</span>
           </button>
-          <button type="button" className={btn} onClick={() => apply(DEFAULT_SEED, "처음 구성(#1)으로 되돌릴까요? 시연 중 만든 경험도 사라져요.")}>
+          <button type="button" className={btn} onClick={() => void apply(DEFAULT_SEED, "처음 구성(#1)으로 되돌릴까요?", "처음 상태로")}>
             <RotateCcw className="size-3.5" aria-hidden />
             <span className={label}>처음 상태로</span>
           </button>
