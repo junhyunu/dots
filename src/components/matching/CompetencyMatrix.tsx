@@ -1,5 +1,5 @@
 "use client";
-// 전체 역량 연결 목록: 역량 7개마다 연결된 경험을 카드로 모아 본다 (대표 먼저, 그다음 보조).
+// 내 역량 한눈에 보기: 역량 7개마다 연결된 경험을 카드로 모아 본다 (대표 먼저, 그다음 보조).
 // 위쪽 바로가기로 역량을 오가고, 경험이 없는 역량은 "빈틈"과 떠올리기 질문을 보여 준다.
 // 경험이 많아져도 가로로 넓어지지 않게 표 대신 목록으로 만든다 (사용자 결정).
 import { ChevronDown, Plus } from "lucide-react";
@@ -63,10 +63,12 @@ export default function CompetencyMatrix() {
 
   const header = (
     <div>
-      <h1 className="text-xl font-bold tracking-tight sm:text-2xl">전체 역량 연결 목록</h1>
-      <p className="mt-1 text-ink-soft">기업이 키워드로 검증하려는 역량마다 내 경험의 어떤 장면을 꺼낼지 한눈에 봐요.
+      <h1 className="text-xl font-bold tracking-tight sm:text-2xl">내 역량 한눈에 보기</h1>
+      <p className="mt-1 text-ink-soft">
+        면접·자기소개서에서 역량을 물으면 꺼낼 장면이 여기 있어요.
         <br />
-        비어 있는 역량은 다음에 정리할 경험의 힌트예요.</p>
+        비어 있는 역량은 다음에 채울 차례예요.
+      </p>
     </div>
   );
 

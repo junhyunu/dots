@@ -165,7 +165,7 @@ export const useAppStore = create<Store>()(
           const exp = newExperience(basic);
           set((s) => ({
             experiences: { ...s.experiences, [exp.id]: exp },
-            // 최신 경험이 맨 위 (사이드바·홈·전체 역량 연결 목록이 이 순서를 쓴다)
+            // 최신 경험이 맨 위 (사이드바·홈·내 역량 한눈에 보기이 이 순서를 쓴다)
             experienceOrder: [exp.id, ...s.experienceOrder],
             activeExperienceId: exp.id,
             view: "experience",

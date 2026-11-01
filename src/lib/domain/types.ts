@@ -121,7 +121,7 @@ export interface Experience {
   star: StarDraft | null;
   keyword: KeywordSet | null;
   matches: CompetencyMatch[] | null;
-  /** 경험을 완성했는지 (역량 키워드 단계의 "경험 완성하기"). 완성한 경험만 홈·전체 역량 연결 목록에 나온다 */
+  /** 경험을 완성했는지 (역량 키워드 단계의 "경험 완성하기"). 완성한 경험만 홈·내 역량 한눈에 보기에 나온다 */
   matchesConfirmed: boolean;
   stories: Story[];
 }

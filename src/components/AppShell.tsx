@@ -209,7 +209,7 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
         }`}
       >
         <LayoutGrid className="size-4" aria-hidden />
-        전체 역량 연결 목록
+        내 역량 한눈에 보기
       </button>
     </nav>
   );
