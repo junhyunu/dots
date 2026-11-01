@@ -64,7 +64,9 @@ export default function CompetencyMatrix() {
   const header = (
     <div>
       <h1 className="text-xl font-bold tracking-tight sm:text-2xl">전체 역량 연결 목록</h1>
-      <p className="mt-1 text-ink-soft">기업이 키워드로 검증하려는 역량마다 내 경험의 어떤 장면을 꺼낼지 한눈에 봐요. 비어 있는 역량은 다음에 정리할 경험의 힌트예요.</p>
+      <p className="mt-1 text-ink-soft">기업이 키워드로 검증하려는 역량마다 내 경험의 어떤 장면을 꺼낼지 한눈에 봐요.
+        <br />
+        비어 있는 역량은 다음에 정리할 경험의 힌트예요.</p>
     </div>
   );
 
