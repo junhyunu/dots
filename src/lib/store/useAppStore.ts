@@ -21,7 +21,7 @@ import {
 import { alignKeywords, mergeKeywords, missingKeywordComps } from "@/lib/domain/keywords";
 import { MAX_SECONDARY_COMPETENCIES, STAGE_ORDER, nextStage } from "@/lib/domain/stages";
 import { migrate } from "./migrations";
-import { DEMO } from "@/lib/mode";
+import { DEMO, UT } from "@/lib/mode";
 
 export type View = "experience" | "new" | "matrix";
 
@@ -391,8 +391,8 @@ export const useAppStore = create<Store>()(
       };
     },
     {
-      // 시연 모드(/demo)는 따로 저장해 실제 데이터를 건드리지 않는다
-      name: DEMO ? "dots:demo" : "dots:state",
+      // 시연 모드(/demo)·UT 모드(/ut)는 따로 저장해 실제 데이터를 건드리지 않는다
+      name: DEMO ? "dots:demo" : UT ? "dots:ut-state" : "dots:state",
       version: SCHEMA_VERSION,
       storage: createJSONStorage(() => localStorage),
       migrate: (persisted, version) => migrate(persisted, version) as Store,
