@@ -34,7 +34,7 @@ function ExperienceTile({ row, onOpen }: { row: Row; onOpen: () => void }) {
         className="press flex h-full w-full cursor-pointer flex-col items-start gap-1.5 rounded-xl border border-line bg-surface p-4 text-left"
       >
         <span
-          className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${primary ? "bg-primary-fill text-on-primary" : "bg-subtle text-ink-soft"}`}
+          className={`rounded-md border px-1.5 py-0.5 text-xs font-semibold ${primary ? "border-line-strong bg-surface text-primary-text" : "border-transparent bg-subtle text-ink-soft"}`}
         >
           {primary ? "대표" : "보조"}
         </span>

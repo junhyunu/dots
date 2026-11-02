@@ -144,7 +144,7 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
               <>
                 <p className="flex items-center gap-1.5 text-xs font-medium text-ink-faint">
                   {competencyName(current.competencyId)}
-                  <span className={`rounded-md px-1.5 py-0.5 font-semibold ${role(current.competencyId) === "primary" ? "bg-primary-fill text-on-primary" : "bg-subtle text-ink-soft"}`}>
+                  <span className={`rounded-md border px-1.5 py-0.5 font-semibold ${role(current.competencyId) === "primary" ? "border-line-strong bg-surface text-primary-text" : "border-transparent bg-subtle text-ink-soft"}`}>
                     {role(current.competencyId) === "primary" ? "대표" : "보조"}
                   </span>
                 </p>

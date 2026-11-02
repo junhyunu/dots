@@ -230,7 +230,12 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
             emphasis
             badge={
               match && (
-                <span className="inline-block rounded-md bg-primary-fill px-1.5 py-0.5 text-xs font-semibold text-on-primary">
+                // 대표 = 흰 바탕 + 회색 테두리 + 파란 글자, 보조 = 회색 바탕 (파랑 덩어리를 줄임, 2026-11-02 사용자 결정)
+                <span
+                  className={`inline-block rounded-md border px-1.5 py-0.5 text-xs font-semibold ${
+                    match.role === "primary" ? "border-line-strong bg-surface text-primary-text" : "border-transparent bg-subtle text-ink-soft"
+                  }`}
+                >
                   {match.role === "primary" ? "대표 역량" : "보조 역량"}
                 </span>
               )
