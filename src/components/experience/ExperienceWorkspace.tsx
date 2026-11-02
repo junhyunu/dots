@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, Lock, Trash2 } from "lucide-react";
 import type { Experience, ExperienceStatus } from "@/lib/domain/types";
 import { useAppStore } from "@/lib/store/useAppStore";
@@ -20,6 +21,54 @@ const STEPS: { id: Step; label: string; short: string }[] = [
   { id: "story", label: "스토리", short: "스토리" },
 ];
 
+/** 잠긴 스토리 탭 위 말풍선: 탭 줄(옆으로 넘기는 상자) 밖에 띄워 잘리지 않게 하고, 화면 밖으로 나가지 않게 당긴다.
+ *  3초 뒤·다른 곳 누르기·Esc·화면 스크롤에 닫힌다. 색은 무채색 반전(잉크 바탕) — 파랑은 '선택됨' 표시라 쓰지 않음 */
+function LockBubble({ anchor, onClose }: { anchor: HTMLElement; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number; arrow: number } | null>(null);
+  const place = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const r = anchor.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const left = Math.min(Math.max(16, cx - el.offsetWidth / 2), window.innerWidth - 16 - el.offsetWidth);
+    setPos({ left, top: r.top - el.offsetHeight - 8, arrow: cx - left });
+  }, [anchor]);
+  useLayoutEffect(place, [place]);
+  useEffect(() => {
+    // 화면 스크롤이면 닫고, 탭 줄을 옆으로 넘기면(누른 탭이 화면 안으로 들어올 때 포함) 따라간다
+    const scroll = (e: Event) => (e.target === document ? onClose() : place());
+    const timer = window.setTimeout(onClose, 3000);
+    const away = (e: PointerEvent) => !anchor.contains(e.target as Node) && onClose();
+    const key = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", key);
+    window.addEventListener("scroll", scroll, { passive: true, capture: true });
+    window.addEventListener("resize", onClose);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", key);
+      window.removeEventListener("scroll", scroll, { capture: true });
+      window.removeEventListener("resize", onClose);
+    };
+  }, [anchor, onClose, place]);
+  return createPortal(
+    <div
+      ref={ref}
+      id="story-lock-note"
+      role="status"
+      style={pos ? { left: pos.left, top: pos.top } : { left: 0, top: 0, visibility: "hidden" }}
+      className="fixed z-50 w-max max-w-[calc(100vw-32px)] rounded-lg bg-ink px-3 py-2 text-[13px] leading-[1.385] font-medium tracking-[0.0194em] whitespace-nowrap text-bg shadow-[0_4px_12px_-4px_rgb(0_0_0/0.3)] sm:text-sm sm:leading-[1.429] sm:tracking-[0.0145em]"
+    >
+      <span className="sm:hidden">경험을 완성하면 쓸 수 있어요</span>
+      <span className="hidden sm:inline">경험을 완성하면 스토리를 쓸 수 있어요</span>
+      {pos && <span aria-hidden className="absolute -bottom-1 size-2 -translate-x-1/2 rotate-45 bg-ink" style={{ left: pos.arrow }} />}
+    </div>,
+    document.body,
+  );
+}
+
 const STATUS_STEP: Record<ExperienceStatus, Step> = {
   interviewing: "interview",
   drafting: "star",
@@ -34,12 +83,13 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
   // 스토리는 경험을 완성한 뒤에만 연다 (완성 전에는 잠근 탭으로 보이고, 누르면 안내만)
   const storyLocked = !experience.matchesConfirmed;
   const isEnabled = (s: Step, i: number) => (s === "story" ? !storyLocked : i <= reached);
-  const [lockNote, setLockNote] = useState(false);
+  const [lockAnchor, setLockAnchor] = useState<HTMLElement | null>(null);
   const [step, setStep] = useState<Step>(
     initialStep && isEnabled(initialStep, STEPS.findIndex((s) => s.id === initialStep)) ? initialStep : STATUS_STEP[experience.status],
   );
+  const closeLock = useCallback(() => setLockAnchor(null), []);
   const goTo = (s: Step) => {
-    setLockNote(false);
+    setLockAnchor(null);
     setStep(s);
     window.scrollTo({ top: 0 });
   };
@@ -92,7 +142,8 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
             const enabled = isEnabled(s.id, i);
             const locked = s.id === "story" && storyLocked;
             const current = s.id === step;
-            const done = s.id === "story" ? experience.stories.some((x) => x.body) : i < reached || (i === reached && experience.status === "done");
+            // 잠긴 탭에는 체크를 달지 않는다 (완성 전에 써 둔 스토리가 있어도 '다 함'과 '잠김'이 함께 보이지 않게)
+            const done = s.id === "story" ? !locked && experience.stories.some((x) => x.body) : i < reached || (i === reached && experience.status === "done");
             // 경험을 완성했는데 스토리가 아직 없으면 다음 할 일로 작은 점을 단다
             const nudge = s.id === "story" && experience.status === "done" && !done && !current;
             return (
@@ -101,8 +152,8 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
                   type="button"
                   disabled={!enabled && !locked}
                   aria-disabled={locked || undefined}
-                  aria-describedby={locked && lockNote ? "story-lock-note" : undefined}
-                  onClick={() => (locked ? setLockNote(true) : goTo(s.id))}
+                  aria-describedby={locked && lockAnchor ? "story-lock-note" : undefined}
+                  onClick={(e) => (locked ? setLockAnchor(e.currentTarget) : goTo(s.id))}
                   aria-current={current ? "step" : undefined}
                   className={`-mb-px flex min-h-11 cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-2.5 focus-visible:-outline-offset-2 sm:px-3 text-[15px] transition-colors duration-150 disabled:cursor-not-allowed ${
                     current
@@ -129,11 +180,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
           })}
         </ol>
       </nav>
-      {lockNote && (
-        <p id="story-lock-note" role="status" className="mt-2 text-sm text-ink-soft">
-          스토리는 역량 키워드 단계에서 경험을 완성하면 쓸 수 있어요.
-        </p>
-      )}
+      {lockAnchor && <LockBubble anchor={lockAnchor} onClose={closeLock} />}
 
       <div className="mt-6">
         {step === "interview" && <InterviewPanel experience={experience} />}

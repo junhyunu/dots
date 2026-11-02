@@ -139,13 +139,14 @@ export default function MatchPanel({ experience, onKeyword }: { experience: Expe
               </Button>
             </div>
           ) : (
-            // 키워드 단계 이후: 여기서 바꾸면 키워드도 맞춰진다 (새로 연결한 역량은 키워드 단계에서 만듦)
+            // 키워드 단계 이후: 여기서 바꾸면 키워드도 맞춰진다 (새로 연결한 역량의 키워드는 키워드 단계에서 만듦)
             <div className="flex flex-col gap-3 rounded-xl bg-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
+              {/* 한 문장씩 줄을 나눠 읽기 쉽게 */}
               <p className="text-[15px] text-ink-soft break-keep">
-                {matchesConfirmed ? "완성한 경험이라 여기서 고치면 홈에도 바로 반영돼요. " : ""}
-                역량을 바꾸면 키워드도 맞춰져요. 새로 연결한 역량의 키워드는 역량 키워드 단계에서 만들어요.
+                {matchesConfirmed && <span className="block">완성한 경험이라 여기서 고치면 홈에도 바로 반영돼요.</span>}
+                <span className="block">역량을 바꾸면 키워드도 맞춰서 바뀌어요.</span>
               </p>
-              <Button variant="secondary" size="sm" disabled={!canConfirm} onClick={() => { confirmMatches(id); onKeyword(); }}>
+              <Button variant="secondary" size="sm" className="shrink-0 whitespace-nowrap" disabled={!canConfirm} onClick={() => { confirmMatches(id); onKeyword(); }}>
                 역량 키워드로
                 <ArrowRight className="size-4" aria-hidden />
               </Button>

@@ -109,6 +109,7 @@ placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이�
 | Chip (Solid/Outlined) | 역량 키워드 칩, 단계 칩 | 선택 = `primary-soft` 바탕 + `primary` 테두리 + `primary-strong` 글자 |
 | Segmented Control | 역량 연결의 대표/보조/연결 안 함 | 라디오 묶음 대신 사용 |
 | Tab | 작업 단계 탭, 스토리 문항 탭 | 선택 = `ink` 글자 + 아래 2px 선 |
+| Tooltip (말풍선) | 잠긴 "스토리" 탭 안내 | **무채색 반전**(`ink` 바탕 + `bg` 글자, 파랑은 '선택됨' 표시라 쓰지 않음). 글자 모바일 13px(Label 2)·PC 14px(Label 1) 500, 안쪽 **상하 8·좌우 12**, 둥글기 8, 너비는 글자에 맞춤(한 줄), 꼬리 8px. 화면 양옆 16px 안으로 당김. 3초 뒤·바깥 누르기·Esc·화면 스크롤에 닫힘 (2026-11-02 사용자 결정) |
 | Toast | "복사했어요", "저장했어요" | 화면 아래 가운데, 잠깐 보였다 사라짐 |
 | Alert (인라인) | `ui/TaskState` 오류 | 오류는 해당 위치에 + [다시 시도] (CLAUDE.md 규칙 유지) |
 | Loading Circular / Skeleton | AI 생성 중 | 버튼 안 = Circular, 원고 자리 = Skeleton |
