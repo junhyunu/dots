@@ -28,3 +28,7 @@ desktop.ini
 .idea/
 .env*
 !.env.example
+
+# 시연 영상 작업 폴더와 결과물 (올리지 않음)
+영상/
+시연영상/
