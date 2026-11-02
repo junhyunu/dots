@@ -2,7 +2,7 @@
 // 스토리 완성: STAR 원고 → 소제목 + 문단의 자기소개서 글.
 // 흐름: 옵션(문항·글자 수, 선택) → 부족한 생각·의도·감정이 있으면 추가 질문 → 글 생성 → 수정·다시 생성·복사
 import { useState } from "react";
-import { ArrowRight, Check, CheckCircle2, Copy, Home, PenLine, Plus, RefreshCw, Star as StarIcon, Trash2 } from "lucide-react";
+import { Check, CheckCircle2, Copy, Home, PenLine, Plus, RefreshCw, Star as StarIcon, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { generate } from "@/lib/api";
 import type { HistoryItem } from "@/lib/ai/contract";
@@ -290,7 +290,7 @@ function StoryFlow({ experience, story }: { experience: Experience; story: Story
 
 // ---------- 패널 ----------
 
-export default function StoryPanel({ experience, onContinue }: { experience: Experience; onContinue: () => void }) {
+export default function StoryPanel({ experience }: { experience: Experience }) {
   const setView = useAppStore((s) => s.setView);
   const { stories } = experience;
   const [selectedId, setSelectedId] = useState<string | null>(stories.at(-1)?.id ?? null);
@@ -347,37 +347,28 @@ export default function StoryPanel({ experience, onContinue }: { experience: Exp
         selected && <StoryFlow key={selected.id} experience={experience} story={selected} />
       )}
 
-      {/* 마무리: 이 경험의 마지막 단계라 다음 행동으로 잇는다 (역량 연결 완성 안내와 같은 모양) */}
-      {!composing && selected?.body &&
-        (experience.matchesConfirmed ? (
-          <div className="rounded-xl border border-ok/30 bg-ok-soft p-4">
-            <p className="flex items-center gap-2 font-medium text-ok">
-              <CheckCircle2 className="size-4" aria-hidden />
-              이 경험의 글을 완성했어요.
-            </p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Button onClick={() => setView("new")}>
-                <Plus className="size-4" aria-hidden />
-                새 경험 정리하기
-              </Button>
-              <Link
-                href={href("/")}
-                className="press inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-surface px-5 font-semibold"
-              >
-                <Home className="size-4" aria-hidden />
-                홈에서 보기
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 rounded-xl border border-line bg-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[15px] text-ink-soft">역량 키워드까지 마치고 경험을 완성하면 홈에 이 경험이 나타나요.</p>
-            <Button variant="secondary" onClick={onContinue}>
-              이어서 정리하기
-              <ArrowRight className="size-4" aria-hidden />
+      {/* 마무리: 이 경험의 마지막 단계라 다음 행동으로 잇는다 (경험 완성 안내와 같은 모양). 스토리는 완성한 경험에서만 연다 */}
+      {!composing && selected?.body && (
+        <div className="rounded-xl border border-ok/30 bg-ok-soft p-4">
+          <p className="flex items-center gap-2 font-medium text-ok">
+            <CheckCircle2 className="size-4" aria-hidden />
+            이 경험의 글을 완성했어요.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => setView("new")}>
+              <Plus className="size-4" aria-hidden />
+              새 경험 정리하기
             </Button>
+            <Link
+              href={href("/")}
+              className="press inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-surface px-5 font-semibold"
+            >
+              <Home className="size-4" aria-hidden />
+              홈에서 보기
+            </Link>
           </div>
-        ))}
+        </div>
+      )}
     </div>
   );
 }

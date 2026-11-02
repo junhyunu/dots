@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Lock, Trash2 } from "lucide-react";
 import type { Experience, ExperienceStatus } from "@/lib/domain/types";
 import { useAppStore } from "@/lib/store/useAppStore";
 import InterviewPanel from "@/components/interview/InterviewPanel";
@@ -31,12 +31,15 @@ const STATUS_STEP: Record<ExperienceStatus, Step> = {
 export default function ExperienceWorkspace({ experience, initialStep }: { experience: Experience; initialStep?: Step }) {
   const deleteExperience = useAppStore((s) => s.deleteExperience);
   const reached = STEPS.findIndex((s) => s.id === STATUS_STEP[experience.status]);
-  // 스토리는 STAR 원고만 있으면 언제든 열 수 있다
-  const isEnabled = (s: Step, i: number) => i <= reached || (s === "story" && !!experience.star);
+  // 스토리는 경험을 완성한 뒤에만 연다 (완성 전에는 잠근 탭으로 보이고, 누르면 안내만)
+  const storyLocked = !experience.matchesConfirmed;
+  const isEnabled = (s: Step, i: number) => (s === "story" ? !storyLocked : i <= reached);
+  const [lockNote, setLockNote] = useState(false);
   const [step, setStep] = useState<Step>(
     initialStep && isEnabled(initialStep, STEPS.findIndex((s) => s.id === initialStep)) ? initialStep : STATUS_STEP[experience.status],
   );
   const goTo = (s: Step) => {
+    setLockNote(false);
     setStep(s);
     window.scrollTo({ top: 0 });
   };
@@ -87,6 +90,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
         <ol className="flex min-w-max gap-1 border-b border-line">
           {STEPS.map((s, i) => {
             const enabled = isEnabled(s.id, i);
+            const locked = s.id === "story" && storyLocked;
             const current = s.id === step;
             const done = s.id === "story" ? experience.stories.some((x) => x.body) : i < reached || (i === reached && experience.status === "done");
             // 경험을 완성했는데 스토리가 아직 없으면 다음 할 일로 작은 점을 단다
@@ -95,14 +99,21 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
               <li key={s.id}>
                 <button
                   type="button"
-                  disabled={!enabled}
-                  onClick={() => goTo(s.id)}
+                  disabled={!enabled && !locked}
+                  aria-disabled={locked || undefined}
+                  aria-describedby={locked && lockNote ? "story-lock-note" : undefined}
+                  onClick={() => (locked ? setLockNote(true) : goTo(s.id))}
                   aria-current={current ? "step" : undefined}
                   className={`-mb-px flex min-h-11 cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-2.5 focus-visible:-outline-offset-2 sm:px-3 text-[15px] transition-colors duration-150 disabled:cursor-not-allowed ${
-                    current ? "border-primary font-semibold text-primary-text" : "border-transparent text-ink-soft hover:text-ink disabled:text-placeholder"
+                    current
+                      ? "border-primary font-semibold text-primary-text"
+                      : locked
+                        ? "border-transparent text-placeholder"
+                        : "border-transparent text-ink-soft hover:text-ink disabled:text-placeholder"
                   }`}
                 >
                   {done && <Check className="size-4" aria-hidden />}
+                  {locked && <Lock className="size-3.5" aria-hidden />}
                   <span className="text-xs tabular-nums opacity-70">{i + 1}</span>
                   <span className="sm:hidden">{s.short}</span>
                   <span className="hidden sm:inline">{s.label}</span>
@@ -118,13 +129,18 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
           })}
         </ol>
       </nav>
+      {lockNote && (
+        <p id="story-lock-note" role="status" className="mt-2 text-sm text-ink-soft">
+          스토리는 역량 키워드 단계에서 경험을 완성하면 쓸 수 있어요.
+        </p>
+      )}
 
       <div className="mt-6">
         {step === "interview" && <InterviewPanel experience={experience} />}
-        {step === "star" && <StarPanel experience={experience} onStory={() => goTo("story")} />}
+        {step === "star" && <StarPanel experience={experience} />}
         {step === "match" && <MatchPanel experience={experience} onKeyword={() => goTo("keyword")} />}
         {step === "keyword" && <KeywordPanel experience={experience} onStory={() => goTo("story")} onMatch={() => goTo("match")} />}
-        {step === "story" && <StoryPanel experience={experience} onContinue={() => goTo(STATUS_STEP[experience.status])} />}
+        {step === "story" && <StoryPanel experience={experience} />}
       </div>
     </article>
   );

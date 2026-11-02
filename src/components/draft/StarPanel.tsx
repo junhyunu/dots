@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, PenLine, Pencil, Plus, RefreshCw, X } from "lucide-react";
+import { ArrowRight, Pencil, Plus, RefreshCw, X } from "lucide-react";
 import { generate } from "@/lib/api";
 import type { StarBlock } from "@/lib/ai/contract";
 import { starBody, toContext } from "@/lib/domain/context";
@@ -149,7 +149,7 @@ function BlockCard({ experienceId, block, star }: { experienceId: string; block:
   );
 }
 
-export default function StarPanel({ experience, onStory }: { experience: Experience; onStory: () => void }) {
+export default function StarPanel({ experience }: { experience: Experience }) {
   const { id, star } = experience;
   const confirmStar = useAppStore((s) => s.confirmStar);
   const canDraft = experience.interview.currentStage === "complete";
@@ -192,10 +192,6 @@ export default function StarPanel({ experience, onStory }: { experience: Experie
             {experience.status !== "drafting" && (
               <p className="text-sm text-ink-faint sm:mr-auto">원고를 고쳤다면 역량 키워드·연결도 다시 생성해 보세요.</p>
             )}
-            <Button variant="secondary" onClick={onStory}>
-              <PenLine className="size-4" aria-hidden />
-              스토리로 완성하기
-            </Button>
             {experience.status === "drafting" && (
               <Button onClick={() => confirmStar(id)}>
                 다음: 역량 연결하기
