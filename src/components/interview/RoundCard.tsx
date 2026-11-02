@@ -126,9 +126,8 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
                 type="button"
                 onClick={() => toggleSkip(experienceId, round.id, item.id)}
                 aria-pressed={item.skipped}
-                className={`min-h-11 cursor-pointer rounded-lg px-3 text-sm transition-colors duration-150 sm:min-h-9 ${
-                  item.skipped ? "bg-primary-soft font-semibold text-primary-text ring-1 ring-primary-soft-line" : "text-ink-soft hover:bg-subtle hover:text-ink"
-                }`}
+                // "기억 안 남" ↔ "답변 다시 쓰기"는 같은 글자 버튼 (상태는 위 점선 칸이 보여 줌, 파랑 = 선택 표시라 쓰지 않음)
+                className="min-h-11 cursor-pointer rounded-lg px-3 text-sm text-ink-soft transition-colors duration-150 hover:bg-subtle hover:text-ink sm:min-h-9"
               >
                 {item.skipped ? "답변 다시 쓰기" : "기억 안 남"}
               </button>
