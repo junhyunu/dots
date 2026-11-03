@@ -98,12 +98,13 @@ export default function CompetencyMatrix() {
               <button
                 type="button"
                 onClick={() => jump(c.id)}
-                className={`press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-sm sm:min-h-9 ${
-                  rows.length ? "border-line-strong bg-surface font-medium" : "border-dashed border-primary-soft-line bg-primary-soft text-primary-text"
+                // 빈 역량은 점선 테두리 + 회색 '빈틈'만 (파란 옅은 바탕은 "선택됨" 표시와 같아 켜진 것처럼 보여서, 2026-11-04 사용자 결정)
+                className={`press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 text-sm font-medium sm:min-h-9 ${
+                  rows.length ? "" : "border-dashed"
                 }`}
               >
                 {c.name}
-                <span className={`tabular-nums ${rows.length ? "text-ink-faint" : "font-semibold"}`}>{rows.length ? rows.length : "빈틈"}</span>
+                <span className={`tabular-nums ${rows.length ? "text-ink-faint" : ""}`}>{rows.length ? rows.length : "빈틈"}</span>
               </button>
             </li>
           ))}
@@ -125,7 +126,7 @@ export default function CompetencyMatrix() {
                         경험 {rows.length}개 · 대표 {primaries} · 보조 {rows.length - primaries}
                       </span>
                     ) : (
-                      <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-semibold text-primary-text">빈틈</span>
+                      <span className="self-center rounded-md border border-dashed border-line-strong bg-surface px-1.5 py-0.5 text-xs font-semibold text-ink-soft">빈틈</span>
                     )}
                   </span>
                   <span className="mt-0.5 block text-sm text-ink-faint">{c.description}</span>
@@ -135,8 +136,13 @@ export default function CompetencyMatrix() {
               <div className="px-4 pb-4 sm:px-5 sm:pb-5">
                 {rows.length === 0 ? (
                   <div className="flex flex-col gap-3 rounded-xl border border-dashed border-line-strong bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-[15px] break-keep text-ink-soft">{c.hint} 떠오르는 장면 하나면 충분해요.</p>
-                    <Button variant="secondary" size="sm" onClick={() => setView("new")}>
+                    {/* 홈 빈 역량 안내처럼 질문과 덧붙임을 두 줄로, 버튼은 줄어들거나 줄바꿈되지 않게 */}
+                    <p className="text-[15px] break-keep text-ink-soft">
+                      {c.hint}
+                      <br />
+                      떠오르는 장면 하나면 충분해요.
+                    </p>
+                    <Button size="sm" className="shrink-0 self-start whitespace-nowrap sm:self-auto" onClick={() => setView("new")}>
                       <Plus className="size-4" aria-hidden />
                       경험 정리하기
                     </Button>
