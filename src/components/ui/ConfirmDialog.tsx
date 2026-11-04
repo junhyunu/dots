@@ -44,7 +44,11 @@ export default function ConfirmHost() {
 
   useEffect(() => {
     const el = ref.current;
-    if (req && el && !el.open) el.showModal();
+    if (req && el && !el.open) {
+      el.showModal();
+      // 창은 열릴 때 맨 앞 버튼에 초점을 준다. [삭제]가 앞(왼쪽)에 있어도 처음 초점은 [취소] (Enter로 실수로 지우지 않게)
+      el.querySelector<HTMLButtonElement>("[data-cancel]")?.focus();
+    }
   }, [req]);
 
   const close = (ok: boolean) => {
@@ -80,13 +84,21 @@ export default function ConfirmHost() {
             {req.body}
           </p>
         )}
+        {/* 지우는 창은 [삭제]를 왼쪽에 둔다 (2026-11-04 사용자 결정). 처음 초점은 어느 쪽이든 [취소] */}
         <div className="mt-6 flex justify-end gap-2">
-          <Button variant="secondary" size="sm" onClick={() => close(false)} autoFocus>
+          {danger && (
+            <Button variant="danger-solid" size="sm" onClick={() => close(true)}>
+              {req.confirmLabel}
+            </Button>
+          )}
+          <Button variant="secondary" size="sm" onClick={() => close(false)} data-cancel>
             취소
           </Button>
-          <Button variant={danger ? "danger-solid" : "primary"} size="sm" onClick={() => close(true)}>
-            {req.confirmLabel}
-          </Button>
+          {!danger && (
+            <Button variant="primary" size="sm" onClick={() => close(true)}>
+              {req.confirmLabel}
+            </Button>
+          )}
         </div>
       </div>
     </dialog>
