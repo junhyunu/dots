@@ -4,7 +4,6 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import { GenerateError } from "@/lib/api";
-import { AI_FAIL_EVENT } from "@/lib/mode";
 
 export type TaskStatus =
   | { state: "loading" }
@@ -31,7 +30,6 @@ export async function runTask(key: string, fn: () => Promise<void>): Promise<voi
     // (console.error면 개발 서버가 오류 창을 띄워 시연 영상에 찍힌다) 예상하지 못한 오류만 error로.
     if (e instanceof GenerateError) console.warn("[task]", e.message);
     else console.error(e);
-    window.dispatchEvent(new Event(AI_FAIL_EVENT));
     const message = e instanceof Error && e.message ? e.message : "알 수 없는 오류가 났어요. 다시 시도해 주세요.";
     const retryable = e instanceof GenerateError ? e.retryable : true;
     setTask(key, { state: "error", message, retryable, retry: () => void runTask(key, fn) });
