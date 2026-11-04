@@ -8,7 +8,7 @@ import { CheckCircle2, Mail } from "lucide-react";
 import Button from "@/components/ui/Button";
 import AutoTextarea from "@/components/ui/AutoTextarea";
 import { Choice } from "@/components/ui/FormFields";
-import { FEEDBACK_KINDS, FEEDBACK_MAX, feedbackRow, placeText, workStep, type FeedbackKind, type FeedbackPlace } from "@/lib/domain/feedback";
+import { FEEDBACK_KINDS, FEEDBACK_MAX, feedbackRow, placeLines, workStep, type FeedbackKind, type FeedbackPlace } from "@/lib/domain/feedback";
 import { copyText } from "@/lib/domain/text";
 import { DEMO } from "@/lib/mode";
 import { useAppStore } from "@/lib/store/useAppStore";
@@ -187,9 +187,16 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
 
               {place && (
                 <div className="mt-3 rounded-lg bg-subtle px-3 py-2.5 text-[13px] leading-relaxed text-ink-faint">
-                  함께 보내는 정보: <b className="font-semibold text-ink-soft">{placeText(place)}</b>
-                  <br />
-                  경험 내용(경험명·답변·원고)은 보내지 않아요.
+                  <p>의견과 함께 이것만 보내요</p>
+                  <dl className="mt-1">
+                    {placeLines(place).map(([k, v]) => (
+                      <div key={k} className="flex gap-3">
+                        <dt className="w-16 shrink-0">{k}</dt>
+                        <dd className="font-semibold text-ink-soft">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-1">경험 내용(경험명·답변·원고)은 보내지 않아요.</p>
                 </div>
               )}
 

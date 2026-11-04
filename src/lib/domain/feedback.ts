@@ -44,8 +44,13 @@ export function workStep(view: "experience" | "new" | "matrix", exp: Experience 
   return `질문 · ${stageDef(stage).name}`;
 }
 
-/** 화면에 보여 주는 "함께 보내는 정보" 한 줄 */
-export const placeText = (p: FeedbackPlace) => [p.screen, p.step, p.device].filter(Boolean).join(" · ");
+/** 화면에 보여 주는 "함께 보내는 정보": 무엇을 보내는지 항목 이름과 함께 (값만 쓰면 "STAR 원고"가 원고 내용처럼 읽혀서, 2026-11-04 사용자 지적) */
+export function placeLines(p: FeedbackPlace): [string, string][] {
+  const lines: [string, string][] = [["보던 화면", p.screen]];
+  if (p.step) lines.push(["진행 단계", p.step]);
+  lines.push(["기기", p.device]);
+  return lines;
+}
 
 export function feedbackRow(kind: FeedbackKind, message: string, place: FeedbackPlace, at: Date): FeedbackRow {
   return {

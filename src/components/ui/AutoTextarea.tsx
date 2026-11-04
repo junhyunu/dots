@@ -8,6 +8,8 @@ export default function AutoTextarea({ className = "", value, minRows = 3, ...re
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
+    // 아직 화면에 보이지 않으면(예: 열리기 전의 창) 높이를 잴 수 없어 0이 나온다 → rows대로 둔다
+    if (el.scrollHeight === 0) return;
     el.style.height = `${el.scrollHeight + 2}px`;
   }, [value]);
   return (

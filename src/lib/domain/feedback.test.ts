@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { experience } from "@/test/factory";
-import { FEEDBACK_MAX, feedbackRow, parseFeedbackRow, placeText, workStep } from "./feedback";
+import { FEEDBACK_MAX, feedbackRow, parseFeedbackRow, placeLines, workStep } from "./feedback";
 
 const place = { screen: "작업 화면", step: "역량 연결", device: "PC" as const };
 
@@ -26,9 +26,16 @@ describe("의견 남기기: 어디서 보냈는지 (경험 내용은 보내지 �
     expect(JSON.stringify(row)).not.toContain(e.basic.title);
   });
 
-  it("함께 보내는 정보 한 줄", () => {
-    expect(placeText(place)).toBe("작업 화면 · 역량 연결 · PC");
-    expect(placeText({ screen: "홈", step: "", device: "모바일" })).toBe("홈 · 모바일");
+  it("함께 보내는 정보는 항목 이름과 함께 (원고 내용처럼 읽히지 않게)", () => {
+    expect(placeLines(place)).toEqual([
+      ["보던 화면", "작업 화면"],
+      ["진행 단계", "역량 연결"],
+      ["기기", "PC"],
+    ]);
+    expect(placeLines({ screen: "홈", step: "", device: "모바일" })).toEqual([
+      ["보던 화면", "홈"],
+      ["기기", "모바일"],
+    ]);
   });
 });
 
