@@ -10,6 +10,7 @@ import type { CompetencyId } from "@/lib/domain/types";
 import { useAppStore } from "@/lib/store/useAppStore";
 import { DotsWordmark } from "@/components/brand/DotsLogo";
 import ThemeToggle from "@/components/brand/ThemeToggle";
+import FeedbackButton from "@/components/feedback/FeedbackButton";
 import OrbGroup from "./orbs/OrbGroup";
 import ExperienceDeck from "./cards/ExperienceDeck";
 import CompetencyTabs from "./cards/CompetencyTabs";
@@ -43,13 +44,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-dvh">
-      {/* 상단 바: 로고 + 서비스명 / 테마 전환. 다른 버튼은 두지 않는다 */}
+      {/* 상단 바: 로고 + 서비스명 / 의견 남기기 · 테마 전환. 아이콘은 PC 24px(로고 글자와 맞춤)·휴대폰 20px (2026-11-04 사용자 결정) */}
       <header className="sticky top-(--top-offset) z-20 border-b border-line bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href={href("/")} aria-label="Dots 닷츠 홈" className="flex items-center rounded-lg">
             <DotsWordmark large />
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-0.5">
+            <FeedbackButton iconClass="size-5 sm:size-6" />
+            <ThemeToggle iconClass="size-5 sm:size-6" />
+          </div>
         </div>
       </header>
 
