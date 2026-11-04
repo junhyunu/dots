@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Wand2 } from "lucide-react";
+import { ArrowRight, MonitorSmartphone, Send, Wand2 } from "lucide-react";
 import { DEMO } from "@/lib/mode";
 import { useAppStore } from "@/lib/store/useAppStore";
 import Button from "@/components/ui/Button";
@@ -28,7 +28,9 @@ export default function NewExperienceForm() {
         {hasAny ? "새 경험 정리하기" : "경험 하나부터 정리해 볼까요?"}
       </h1>
       <p className="mt-2 text-ink-soft">
-        경험 하나를 적으면 상황 → 목표 → 행동 → 결과 → 배운 점 순서로 질문을 드려요. 답이 모이면 자기소개서·면접에 쓸 수 있는 STAR 원고로 정리해 드립니다.
+        {/* 줄바꿈은 PC에서만 (모바일은 이어서, 사용자 결정 2026-11-04) */}
+        경험 하나를 적으면 상황 → 목표 → 행동 → 결과 → 배운 점 순서로 질문을 드려요. <br className="max-sm:hidden" />
+        답이 모이면 자기소개서·면접에 쓸 수 있는 STAR 원고로 정리해 드립니다.
       </p>
 
       {DEMO && (
@@ -60,6 +62,23 @@ export default function NewExperienceForm() {
           </div>
         ))}
         <p className="text-sm text-ink-faint">편하게 적어도 괜찮아요. 정리는 나중에 함께 합니다.</p>
+        {/* 실제 화면에도 UT 동의 화면과 같은 안내: 답변이 AI로 가는 것, 이 브라우저에만 저장되는 것 (2026-11-04 사용자 결정) */}
+        <div className="space-y-2 rounded-lg border border-line bg-subtle px-3.5 py-3 text-sm leading-relaxed text-ink-soft">
+          <p className="flex gap-2">
+            <Send className="mt-[3px] size-4 shrink-0 text-ink-faint" aria-hidden />
+            <span>
+              입력한 내용은 질문과 원고를 만들기 위해 <b className="font-semibold text-ink">AI(Claude)로 전달</b>돼요. <br className="max-sm:hidden" />
+              팀원 실명·연락처·회사 내부 정보는 빼고 적어 주세요.
+            </span>
+          </p>
+          <p className="flex gap-2">
+            <MonitorSmartphone className="mt-[3px] size-4 shrink-0 text-ink-faint" aria-hidden />
+            <span>
+              경험은 서버가 아니라 <b className="font-semibold text-ink">이 브라우저에만 저장</b>돼요. <br className="max-sm:hidden" />
+              다른 기기·브라우저에서는 보이지 않고, 인터넷 기록을 지우면 사라져요.
+            </span>
+          </p>
+        </div>
         <Button type="submit" disabled={!values.title.trim()} className="w-full sm:w-auto">
           질문 시작하기
           <ArrowRight className="size-4" aria-hidden />
