@@ -6,7 +6,10 @@ import { FileText, LayoutGrid, Menu, Plus, Search, X } from "lucide-react";
 import { useActiveExperience, useAppStore, type View } from "@/lib/store/useAppStore";
 import { DotsWordmark } from "./brand/DotsLogo";
 import ThemeToggle from "./brand/ThemeToggle";
+import FeedbackButton from "./feedback/FeedbackButton";
 import NewExperienceForm from "./experience/NewExperienceForm";
+import ExperienceItemMenu from "./experience/ExperienceItemMenu";
+import { confirmAction } from "./ui/ConfirmDialog";
 import ExperienceWorkspace, { type Step } from "./experience/ExperienceWorkspace";
 import CompetencyMatrix from "./matching/CompetencyMatrix";
 import { href } from "@/lib/mode";
@@ -32,13 +35,64 @@ function Highlighted({ text, query }: { text: string; query: string }) {
 
 function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience; hit: SearchHit; query: string; active: boolean; onClick: () => void }) {
   const working = exp.status !== "done";
+  const updateBasic = useAppStore((s) => s.updateBasic);
+  const deleteExperience = useAppStore((s) => s.deleteExperience);
+  const [renaming, setRenaming] = useState(false);
+  const [draft, setDraft] = useState(exp.basic.title);
+
+  const startRename = () => {
+    setDraft(exp.basic.title);
+    setRenaming(true);
+  };
+  // 빈 이름은 저장하지 않는다 (원래 이름으로)
+  const finishRename = (save: boolean) => {
+    const title = draft.trim();
+    if (save && title && title !== exp.basic.title) updateBasic(exp.id, { ...exp.basic, title });
+    setRenaming(false);
+  };
+  const remove = async () => {
+    const ok = await confirmAction({
+      title: "이 경험을 삭제할까요?",
+      body: `'${exp.basic.title}' 경험이 사라지고 되돌릴 수 없어요.`,
+      confirmLabel: "삭제",
+      tone: "danger",
+    });
+    if (ok) deleteExperience(exp.id);
+  };
+
+  if (renaming)
+    return (
+      <li className="flex min-h-11 items-center gap-2 rounded-lg bg-subtle px-3 py-1.5">
+        <FileText className="size-4 shrink-0" aria-hidden />
+        <input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onFocus={(e) => e.target.select()}
+          onBlur={() => finishRename(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") finishRename(true);
+            if (e.key === "Escape") {
+              // 서랍 메뉴 닫기로 넘어가지 않게
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              finishRename(false);
+            }
+          }}
+          aria-label="경험명 바꾸기"
+          className="min-h-9 min-w-0 flex-1 rounded-md border border-primary bg-surface px-2 text-[15px] focus:ring-2 focus:ring-primary/20 focus:outline-none"
+        />
+      </li>
+    );
+
   return (
-    <li>
+    // 마우스를 올리거나 키보드로 오면 오른쪽 위 단계 표시 자리에 ⋯가 나온다. 휴대폰(마우스 없음)은 지금 보고 있는 경험에만 늘 보인다
+    <li className="group relative">
       <button
         type="button"
         onClick={onClick}
         aria-current={active ? "page" : undefined}
-        className={`flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-left transition-colors duration-150 ${
+        className={`flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-lg py-2 pr-1 pl-3 text-left transition-colors duration-150 ${
           active ? "bg-primary-soft text-primary-text" : "hover:bg-subtle"
         }`}
       >
@@ -54,9 +108,20 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
             </span>
           )}
         </span>
-        {/* 완료는 표시하지 않고, 작업 중일 때만 어느 단계인지 보여 준다 */}
-        {working && <span className="mt-0.5 shrink-0 rounded-md bg-subtle px-1.5 py-0.5 text-xs font-medium text-ink-soft">{STATUS_LABEL[exp.status]}</span>}
+        {/* 완료는 표시하지 않고, 작업 중일 때만 어느 단계인지 보여 준다. ⋯가 나오면 그 자리를 비켜 준다.
+            ⋯ 자리는 마우스가 있는 기기와 지금 보고 있는 줄에만 남긴다 (휴대폰에서 다른 줄 이름이 일찍 줄바꿈되지 않게) */}
+        <span
+          className={`mt-0.5 flex shrink-0 justify-end ${active ? "min-w-9" : "[@media(hover:hover)]:min-w-9"} group-hover:invisible group-has-[:focus-visible]:invisible ${active ? "[@media(hover:none)]:invisible" : ""}`}
+        >
+          {working && <span className="rounded-md bg-subtle px-1.5 py-0.5 text-xs font-medium text-ink-soft">{STATUS_LABEL[exp.status]}</span>}
+        </span>
       </button>
+      <ExperienceItemMenu
+        title={exp.basic.title}
+        onRename={startRename}
+        onDelete={() => void remove()}
+        className={`absolute top-0 right-0 opacity-0 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100 ${active ? "[@media(hover:none)]:opacity-100" : ""}`}
+      />
     </li>
   );
 }
@@ -243,7 +308,10 @@ export default function AppShell() {
           <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex items-center rounded-lg">
             <DotsWordmark />
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-0.5">
+            <FeedbackButton />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="min-h-0 flex-1">
           <Sidebar onNavigate={() => {}} />
@@ -265,7 +333,10 @@ export default function AppShell() {
           <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex flex-1 items-center rounded-lg">
             <DotsWordmark />
           </Link>
-          <ThemeToggle large />
+          <div className="flex items-center gap-0.5">
+            <FeedbackButton iconClass="size-6" />
+            <ThemeToggle large />
+          </div>
         </header>
 
         {drawerOpen && (

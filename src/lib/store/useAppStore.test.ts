@@ -123,6 +123,34 @@ describe("단계 넘어가기와 경험 완성", () => {
   });
 });
 
+describe("사이드바 ⋯ 목록: 이름 바꾸기·삭제", () => {
+  it("이름을 바꾸면 시기·역할은 그대로", () => {
+    seed();
+    store().updateBasic("exp-1", { ...exp().basic, title: "새 이름" });
+    expect(exp().basic).toMatchObject({ title: "새 이름", period: "2025년 5월", role: "부스 총괄" });
+  });
+
+  it("보고 있던 경험을 지우면 새 경험 입력 화면으로", () => {
+    seed();
+    useAppStore.setState({ view: "experience" });
+    store().deleteExperience("exp-1");
+    expect(store().experiences["exp-1"]).toBeUndefined();
+    expect(store().experienceOrder).toEqual([]);
+    expect(store().view).toBe("new");
+    expect(store().activeExperienceId).toBeNull();
+  });
+
+  it("다른 경험을 지우면 보던 화면은 그대로", () => {
+    const a = experience({ id: "a" });
+    const b = experience({ id: "b" });
+    useAppStore.setState({ experiences: { a, b }, experienceOrder: ["a", "b"], activeExperienceId: "a", view: "experience" });
+    store().deleteExperience("b");
+    expect(store().experienceOrder).toEqual(["a"]);
+    expect(store().activeExperienceId).toBe("a");
+    expect(store().view).toBe("experience");
+  });
+});
+
 describe("경험 목록 순서 (최신 경험이 맨 앞)", () => {
   it("새 경험은 목록 맨 앞에 들어간다", () => {
     const first = store().createExperience({ title: "첫 경험", period: "", role: "" });
