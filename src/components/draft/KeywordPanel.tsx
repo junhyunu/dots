@@ -180,6 +180,7 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
                 <CheckCircle2 className="size-4" aria-hidden />
                 경험을 완성했어요. 여기서 고치면 홈에도 바로 반영돼요.
               </p>
+              <p className="mt-1 pl-6 text-[15px] text-ink-soft">홈 카드에서 원고를 파일(TXT·Word·MD)로 내려받을 수 있어요.</p>
               {!hasStory && <p className="mt-1 pl-6 text-[15px] text-ink-soft">이 경험을 자기소개서 글로 다듬어 볼까요?</p>}
               {/* 주요 행동은 스토리 하나 (서비스의 마지막 결과물), 나머지는 보조 버튼 */}
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">

@@ -193,7 +193,14 @@ export default function StarPanel({ experience }: { experience: Experience }) {
               <p className="text-sm text-ink-faint sm:mr-auto">원고를 고쳤다면 역량 키워드·연결도 다시 생성해 보세요.</p>
             )}
             {experience.status === "drafting" && (
-              <Button onClick={() => confirmStar(id)}>
+              // 내려받기는 홈 카드에만 있어서 미리 알려 준다 (2026-11-04 사용자 결정)
+              <p className="text-sm text-ink-faint sm:mr-auto">
+                역량 키워드까지 마치고 경험을 완성하면, <br className="max-sm:hidden" />
+                홈에서 원고를 파일(TXT·Word·MD)로 내려받을 수 있어요.
+              </p>
+            )}
+            {experience.status === "drafting" && (
+              <Button className="shrink-0 whitespace-nowrap" onClick={() => confirmStar(id)}>
                 다음: 역량 연결하기
                 <ArrowRight className="size-4" aria-hidden />
               </Button>
