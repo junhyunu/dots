@@ -88,6 +88,7 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
         <h2 id={`stage-${stage}`} className="mt-0.5 text-lg font-bold break-keep sm:text-xl">
           {def.title}
         </h2>
+        {def.hint && <p className="mt-1 text-sm text-ink-faint break-keep">{def.hint}</p>}
       </header>
 
       {/* 이미 답한 라운드 (이 단계 안) */}
