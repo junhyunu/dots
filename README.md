@@ -107,7 +107,7 @@ npm run dev
 | 명령 | 하는 일 |
 |---|---|
 | `npm run dev` | 개발용으로 실행 (http://localhost:3000) |
-| `npm run build` | 배포용으로 묶기 (오류가 없는지 확인할 때도 씀) |
+| `npm run build` | 자동 테스트 후 배포용으로 묶기 (테스트가 실패하면 멈춤, Vercel 배포도 이 명령) |
 | `npm run start` | 배포용으로 묶은 것을 실행 |
 | `npm run typecheck` | 코드 타입 검사 |
 | `npm test` | 자동 테스트: 서비스 규칙(키워드·역량 연결·예전 데이터 옮기기·글자 수 등)이 지켜지는지 몇 초 만에 확인 |
