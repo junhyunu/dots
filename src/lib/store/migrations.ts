@@ -40,6 +40,7 @@ export function migrate(persisted: unknown, version: number): unknown {
       if (version < 3) state.experiences[id] = v2toV3(state.experiences[id]);
     }
   }
-  state.schemaVersion = SCHEMA_VERSION;
+  // 저장 데이터가 통째로 비어 있으면(null) 옮길 것이 없다. 그대로 돌려주면 앱은 빈 상태로 열린다
+  if (state && typeof state === "object") state.schemaVersion = SCHEMA_VERSION;
   return state;
 }
