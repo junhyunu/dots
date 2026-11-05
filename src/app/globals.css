@@ -160,6 +160,15 @@ body {
   animation: rainbow 4s linear infinite;
   pointer-events: none;
 }
+/* 모바일(640px 미만): 빛을 버튼 뒤로 보내고 세기를 낮춘다. .press의 isolation이 빛을 버튼 바탕 위에 그려 얼룩이 생겨서 */
+@media (max-width: 639px) {
+  .rainbow-cta {
+    isolation: auto;
+  }
+  .rainbow-cta::before {
+    opacity: 0.45;
+  }
+}
 @keyframes rainbow {
   from { background-position: 0%; }
   to { background-position: 200%; }
