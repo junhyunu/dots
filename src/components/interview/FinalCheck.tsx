@@ -10,6 +10,7 @@ import { useAutoTask } from "@/lib/store/useTaskRunner";
 import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
 import RoundCard from "./RoundCard";
+import { useStageFollow } from "./useStageFollow";
 
 export default function FinalCheck({ experience }: { experience: Experience }) {
   const { id, interview } = experience;
@@ -19,6 +20,7 @@ export default function FinalCheck({ experience }: { experience: Experience }) {
   const round = interview.finalCheck?.[0];
   // 단계 질문과 같은 규칙: 답을 하나라도 쓰거나 "기억 안 남"을 눌러야 제출 (아니면 [건너뛰고]로 넘긴다)
   const canSubmit = !!round && round.items.some((i) => i.skipped || i.answer.trim());
+  const sectionRef = useStageFollow(!!round && active);
 
   const status = useAutoTask(`${id}:final_check`, active && interview.finalCheck === null, async () => {
     const exp = getStore().experiences[id];
@@ -34,7 +36,7 @@ export default function FinalCheck({ experience }: { experience: Experience }) {
   };
 
   return (
-    <section aria-labelledby="final-check" className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
+    <section ref={sectionRef} tabIndex={-1} aria-labelledby="final-check" className="scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-surface p-4 focus:outline-none sm:p-6 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
       <header className="mb-5">
         <p className="text-sm font-semibold text-primary-text">전체 점검</p>
         <h2 id="final-check" className="mt-0.5 text-lg font-bold sm:text-xl">

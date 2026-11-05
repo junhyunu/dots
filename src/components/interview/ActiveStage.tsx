@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button";
 import TaskState from "@/components/ui/TaskState";
 import RoundCard from "./RoundCard";
 import SummaryCard from "./SummaryCard";
+import { followNextStage, useStageFollow } from "./useStageFollow";
 
 const latest = (id: string) => getStore().experiences[id];
 
@@ -26,6 +27,7 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
   const open = last && !last.submittedAt ? last : null;
   const awaitingReview = last && last.submittedAt && !last.reviewed ? last : null;
   const ready = !!last && last.reviewed && !open && !!log.summary;
+  const sectionRef = useStageFollow(!!open);
 
   // 1) 첫 질문 자동 생성
   const questionsStatus = useAutoTask(`${id}:questions:${stage}`, log.rounds.length === 0, async () => {
@@ -82,7 +84,7 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
   const next = nextStage(stage);
 
   return (
-    <section aria-labelledby={`stage-${stage}`} className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
+    <section ref={sectionRef} tabIndex={-1} aria-labelledby={`stage-${stage}`} className="scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-surface p-4 focus:outline-none sm:p-6 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
       <header className="mb-5">
         <p className="text-sm font-semibold text-primary-text">{def.name}</p>
         <h2 id={`stage-${stage}`} className="mt-0.5 text-lg font-bold break-keep sm:text-xl">
@@ -142,7 +144,12 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
         <div ref={summaryRef} tabIndex={-1} className="scroll-mt-[calc(var(--top-offset)+5rem)] space-y-4 focus:outline-none lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
           <SummaryCard experienceId={id} stage={stage} summary={log.summary!} edited={log.summaryEdited} />
           <div className="flex justify-end">
-            <Button onClick={() => advanceStage(id, stage)}>
+            <Button
+              onClick={() => {
+                followNextStage();
+                advanceStage(id, stage);
+              }}
+            >
               {next ? `다음 단계: ${stageDef(next).name}` : "전체 점검으로"}
               <ArrowRight className="size-4" aria-hidden />
             </Button>

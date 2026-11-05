@@ -4,6 +4,7 @@ import { ArrowRight, MonitorSmartphone, Send, Wand2 } from "lucide-react";
 import { DEMO } from "@/lib/mode";
 import { useAppStore } from "@/lib/store/useAppStore";
 import Button from "@/components/ui/Button";
+import { followNextStage } from "@/components/interview/useStageFollow";
 
 const FIELDS = [
   { key: "title", label: "경험명", placeholder: "예) 일본 여행 콘텐츠 탐색·저장 서비스 팀 프로젝트", required: true },
@@ -19,6 +20,7 @@ export default function NewExperienceForm() {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!values.title.trim()) return;
+    followNextStage();
     createExperience({ title: values.title.trim(), period: values.period.trim(), role: values.role.trim() });
   };
 
