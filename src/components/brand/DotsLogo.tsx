@@ -45,14 +45,23 @@ export function DotsWordmark({ large = false }: { large?: boolean }) {
     <span className={`inline-flex items-baseline ${large ? "gap-2" : "gap-1.5"}`}>
       <span className={`font-bold tracking-tight ${large ? "text-xl sm:text-2xl" : "text-lg"}`}>
         <span className="sr-only">Dots</span>
-        <span aria-hidden className="inline-flex items-baseline">
-          D
+        {/* 마우스를 올리거나 키보드로 오면 글자가 차례로 굴러 "닷츠"로 바뀐다. 모션은 globals.css의 .wm-out·.wm-in */}
+        <span aria-hidden className="relative inline-flex items-baseline">
+          <span className="wm-out [--i:0]">D</span>
           {/* 로고 원은 소문자 o 높이(약 0.6em)로, 그림 둘레 여백만큼 살짝 내려 글자 아랫선에 앉힌다 */}
-          <DotsLogo size="0.66em" className="mx-[0.02em] translate-y-[0.05em]" />
-          ts
+          <span className="wm-out [--i:1]">
+            <DotsLogo size="0.66em" className="mx-[0.02em] translate-y-[0.05em]" />
+          </span>
+          <span className="wm-out [--i:2]">t</span>
+          <span className="wm-out [--i:3]">s</span>
+          <span className="absolute top-0 left-0 whitespace-nowrap">
+            <span className="wm-in [--i:0]">닷</span>
+            <span className="wm-in [--i:1.5]">츠</span>
+          </span>
         </span>
       </span>
-      <span className={`text-ink-faint ${large ? "text-[13px] sm:text-sm" : "text-xs"}`}>닷츠</span>
+      {/* 마우스가 있는 기기는 글자가 "닷츠"로 바뀌므로 숨기고, 휴대폰에서만 읽는 법으로 남긴다 */}
+      <span className={`wm-label text-ink-faint ${large ? "text-[13px] sm:text-sm" : "text-xs"}`}>닷츠</span>
     </span>
   );
 }
