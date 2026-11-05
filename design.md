@@ -102,7 +102,7 @@ placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이�
 
 | 몽타주 부품 | Dots 부품 | 규칙 |
 |---|---|---|
-| Button (Solid, Primary) | `ui/Button` primary | 바탕 `primary-strong`, 흰 글자, 16px 600, 둥글기 12, 높이 48(Large) / 40(Medium). 터치 영역 44px 이상 유지 |
+| Button (Solid, Primary) | `ui/Button` primary | 바탕 `primary-strong`, 흰 글자, 16px 600, 둥글기 12, 높이 48(Large) / 40(Medium). 터치 영역 44px 이상 유지. 모든 버튼 글자는 낱말 안에서 끊지 않는다(긴 이름은 낱말 사이에서만 줄바꿈, 2026-11-05 사용자 결정) |
 | Button (Outlined, Assistive) | `ui/Button` secondary | `surface` 바탕 + `line-strong` 테두리 + `ink` 글자 |
 | Button/Text | `ui/Button` ghost | 글자만. 눌림 영역 둥글기 6 |
 | 눌림·호버 효과 | 모든 버튼·칩 | 몽타주 Interaction 방식: 위에 `ink` 색 얇은 막(투명도는 구현 때 몽타주 값 확인) |

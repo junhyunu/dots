@@ -22,12 +22,13 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export default function Button({ variant = "primary", loading, size = "md", className = "", children, disabled, ...rest }: Props) {
   // md = Large(높이 48), sm = Medium(높이 40, 모바일은 터치 영역 44)
+  // 버튼 글자는 낱말 안에서 끊지 않는다(옆 글에 밀려 "수/정"처럼 세로로 쌓이지 않게). 긴 이름은 낱말 사이에서만 줄이 바뀐다
   const sizing = size === "md" ? "min-h-12 px-5 text-base" : "min-h-11 px-4 text-[15px] sm:min-h-10";
   return (
     <button
       type="button"
       disabled={disabled || loading}
-      className={`press inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg font-semibold transition-colors duration-150 disabled:cursor-not-allowed ${sizing} ${VARIANTS[variant]} ${className}`}
+      className={`press inline-flex cursor-pointer [overflow-wrap:normal] items-center justify-center gap-1.5 rounded-lg font-semibold transition-colors duration-150 disabled:cursor-not-allowed ${sizing} ${VARIANTS[variant]} ${className}`}
       {...rest}
     >
       {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
