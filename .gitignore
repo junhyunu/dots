@@ -35,3 +35,6 @@ desktop.ini
 
 # 발표 자료 (올리지 않음)
 발표/
+
+# Claude Code 로컬 설정(검수 에이전트)
+.claude/
