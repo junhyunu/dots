@@ -25,15 +25,17 @@
 |---|---|---|---|---|
 | `bg` | 페이지 바탕 | Background/Normal/Normal | `#FFFFFF` | `#1B1C1E` |
 | `surface` | 카드, 입력칸 | Background/Elevated/Normal | `#FFFFFF` | `#212225` |
-| `subtle` | 옅은 영역, 사이드바 | Background/Normal/Alternative | `#F7F7F8` | `#141415` |
+| `subtle` | 옅은 영역, 사이드바 | Background/Normal/Alternative | `#F7F7F8` | `#2A2B2E` |
 | `line` | 기본 테두리 | Line/Solid/Neutral | `#EAEBEC` | `#333438` |
-| `line-strong` | 입력칸·강한 테두리 | Line/Solid/Normal | `#E1E2E4` | `#37383C` |
+| `line-strong` | 입력칸·강한 테두리 | Line/Solid/Normal | `#E1E2E4` | `#46474C` † |
 | `ink` | 본문, 홈 주요 버튼 | Label/Normal | `#171719` | `#F7F7F8` |
 | `ink-soft` | 보조 글 | Label/Neutral (섞은 값) | `#47484C` | `#AEB0B3` |
 | `ink-faint` | 흐린 글, 설명 | Cool Neutral 50 / 70 | `#70737C` * | `#989BA2` |
 | `placeholder` | 입력칸 안내 글 | Label/Assistive (섞은 값) | `#C7C8C9` | `#5A5C63` |
 
 \* 몽타주 Label/Alternative(`#37383C9C`)는 흰 바탕에서 3.7:1이라 본문 기준(4.5:1)에 못 미친다. 그래서 `ink-faint`는 Cool Neutral 50(흰 바탕 4.7:1)을 쓴다. `subtle` 바탕 위에서는 4.4:1이라 그 위의 작은 글자는 `ink-soft`를 쓴다.
+
+† 입력칸 테두리 대비는 라이트 1.29:1, 다크 약 1.7:1로 WCAG 1.4.11 기준(3:1)보다 낮다. 검수에서 지적됐지만 지금 색을 그대로 두기로 했다(2026-11-05 사용자 결정).
 placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이게). 그래서 낮은 대비를 허용한다.
 
 ### 2-2. 프라이머리
@@ -74,7 +76,7 @@ placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이�
 | Body 1 Reading | **16 / 1.625** | 400·500·600 | 0.57% | **본문, 답변, 원고** (CLAUDE.md의 16px·1.6 규칙과 일치) |
 | Body 1 Normal | 16 / 1.5 | 400·600 | 0.57% | 버튼, 입력칸 한 줄 |
 | Body 2 | 15 / 1.467 | 400·600 | 0.96% | 사이드바 목록 |
-| Label 1 | 14 / 1.429 | 500·600 | 1.45% | 입력칸 라벨, 작은 버튼 |
+| Label 1 | 14 / 1.429 | 500·600 | 1.45% | 보조 라벨, 작은 버튼 |
 | Label 2 | 13 / 1.385 | 500 | 1.94% | 글자 수, 칩 |
 | Caption 1 | 12 / 1.334 | 400·600 | 2.52% | 도움말, 예시 표시 |
 
@@ -94,7 +96,7 @@ placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이�
   | 카드 | 16px (구현 때 몽타주 Card 부품으로 확인) |
   | 텍스트 버튼 눌림 영역 | 6px |
 
-- **그림자**: 작업 화면은 평평하게. 입력칸에만 Xsmall(`0 1px 2px -1px rgb(23 23 23 / 0.1)`), 떠 있는 메뉴·토스트에 Medium. 홈 카드는 지금처럼 테두리만
+- **그림자**: 작업 화면은 평평하게. 여러 줄 입력칸(`ui/AutoTextarea`)에만 Xsmall(`0 1px 2px -1px rgb(23 23 23 / 0.1)`), 한 줄 입력칸에는 없음(2026-11-05 사용자 결정: 화면 그대로 두고 문서를 맞춤), 떠 있는 메뉴·토스트에 Medium. 홈 카드는 지금처럼 테두리만
 
 ## 5. 부품 대응
 
@@ -104,7 +106,7 @@ placeholder는 라벨을 대신하지 않는다(라벨은 항상 위에 보이�
 | Button (Outlined, Assistive) | `ui/Button` secondary | `surface` 바탕 + `line-strong` 테두리 + `ink` 글자 |
 | Button/Text | `ui/Button` ghost | 글자만. 눌림 영역 둥글기 6 |
 | 눌림·호버 효과 | 모든 버튼·칩 | 몽타주 Interaction 방식: 위에 `ink` 색 얇은 막(투명도는 구현 때 몽타주 값 확인) |
-| Textinput/Textfield | 경험명·시기·역할, 문항, 글자 수 | 위에 라벨(14px 600), 상자 둥글기 12·안쪽 12px·테두리 1px, 아래 도움말(12px). 포커스 시 테두리 `primary` |
+| Textinput/Textfield | 경험명·시기·역할, 문항, 글자 수 | 위에 라벨(16px 500, 2026-11-05 사용자 결정: 화면 그대로 두고 문서를 맞춤. 카드 안 수정 칸처럼 좁은 곳의 보조 라벨은 12~14px 500), 상자 둥글기 12·안쪽 12px·테두리 1px, 아래 도움말(12px). 포커스 시 테두리 `primary` |
 | Textinput/Textarea | `ui/AutoTextarea` (답변, 원고, 요약) | 위와 같음 + 상자 안 아래쪽 왼쪽에 글자 수(13px) |
 | Chip (Solid/Outlined) | 역량 키워드 칩, 단계 칩 | 선택 = `primary-soft` 바탕 + `primary` 테두리 + `primary-strong` 글자 |
 | Segmented Control | 역량 연결의 대표/보조/연결 안 함 | 라디오 묶음 대신 사용 |

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FileText, LayoutGrid, Menu, Plus, Search, X } from "lucide-react";
@@ -285,6 +285,7 @@ export default function AppShell() {
   const view = useAppStore((s) => s.view);
   const experience = useActiveExperience();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
   // 메뉴 아이콘의 파란 점: 지금 보고 있는 경험 말고 작업 중인 경험이 더 있을 때만 (사용자 결정 A)
   const viewingId = view === "experience" ? experience?.id : undefined;
   const waiting = useAppStore((s) => Object.values(s.experiences).filter((e) => e.status !== "done" && e.id !== viewingId).length);
@@ -302,6 +303,21 @@ export default function AppShell() {
 
   return (
     <div className="flex min-h-dvh">
+      {/* 키보드 사용자용: 평소엔 숨어 있고 Tab으로 오면 왼쪽 위에 뜬다. 주소에 #이 남지 않게 코드로 옮긴다 */}
+      <div className="fixed top-[calc(var(--top-offset)+0.5rem)] left-2 z-30">
+        <a
+          href="#main-content"
+          onClick={(e) => {
+            e.preventDefault();
+            mainRef.current?.focus({ preventScroll: true });
+            mainRef.current?.scrollIntoView({ block: "start" });
+          }}
+          className="sr-only rounded-lg border border-line-strong bg-surface text-sm font-semibold text-primary-text shadow-md focus:not-sr-only focus:flex focus:min-h-11 focus:items-center focus:px-4"
+        >
+          본문으로 건너뛰기
+        </a>
+      </div>
+
       {/* 데스크톱 사이드바 */}
       <aside className="sticky top-(--top-offset) hidden h-[calc(100dvh-var(--top-offset))] w-64 shrink-0 flex-col border-r border-line bg-bg lg:flex">
         <div className="flex items-center justify-between pl-5 pr-3 pt-3">
@@ -363,7 +379,14 @@ export default function AppShell() {
           </div>
         )}
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:py-10">{content}</main>
+        <main
+          ref={mainRef}
+          id="main-content"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-3xl flex-1 scroll-mt-[calc(var(--top-offset)+3.5rem)] px-4 py-6 focus:outline-none sm:px-6 lg:scroll-mt-(--top-offset) lg:py-10"
+        >
+          {content}
+        </main>
       </div>
     </div>
   );
