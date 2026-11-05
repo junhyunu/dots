@@ -63,7 +63,7 @@ export default function NewExperienceForm() {
         ))}
         <p className="text-sm text-ink-faint">편하게 적어도 괜찮아요. 정리는 나중에 함께 합니다.</p>
         {/* 실제 화면에도 UT 동의 화면과 같은 안내: 답변이 AI로 가는 것, 이 브라우저에만 저장되는 것 (2026-11-04 사용자 결정) */}
-        <div className="space-y-2 rounded-lg border border-line bg-subtle px-3.5 py-3 text-sm leading-relaxed text-ink-soft">
+        <div className="space-y-2 rounded-lg border border-line bg-subtle px-3.5 py-3 text-[13px] leading-relaxed text-ink-soft">
           <p className="flex gap-2">
             <Send className="mt-[3px] size-4 shrink-0 text-ink-faint" aria-hidden />
             <span>
