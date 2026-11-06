@@ -39,7 +39,7 @@ export default function FinalCheck({ experience }: { experience: Experience }) {
     <section ref={sectionRef} tabIndex={-1} aria-labelledby="final-check" className="scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-surface p-4 focus:outline-none sm:p-6 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
       <header className="mb-5">
         <p className="text-sm font-semibold text-primary-text">전체 점검</p>
-        <h2 id="final-check" className="mt-0.5 text-lg font-bold sm:text-xl">
+        <h2 id="final-check" className="mt-0.5 text-lg font-bold sm:text-2xl">
           원고를 쓰기 전에 마지막으로 확인할게요
         </h2>
       </header>
@@ -50,13 +50,17 @@ export default function FinalCheck({ experience }: { experience: Experience }) {
         <>
           <RoundCard experienceId={id} round={round} label="단계를 넘나드는 빈틈만 여쭤요" />
           {active && (
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => finish(true)}>
+            // 키보드 순서가 보이는 순서와 같도록 건너뛰기를 자리마다 따로 둔다 (휴대폰 = 제출 아래, PC = 제출 왼쪽)
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button variant="ghost" className="max-sm:hidden" onClick={() => finish(true)}>
                 건너뛰고 원고 만들기
               </Button>
               <Button disabled={!canSubmit} onClick={() => finish(false)}>
                 <FileText className="size-4" aria-hidden />
                 답변 제출하고 원고 만들기
+              </Button>
+              <Button variant="ghost" className="sm:hidden" onClick={() => finish(true)}>
+                건너뛰고 원고 만들기
               </Button>
             </div>
           )}

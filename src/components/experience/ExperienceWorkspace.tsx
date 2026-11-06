@@ -119,7 +119,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
     <article aria-labelledby="exp-title">
       <header className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h1 id="exp-title" className="text-xl font-bold tracking-tight break-keep sm:text-2xl">
+          <h1 id="exp-title" className="text-xl font-bold tracking-tight break-keep sm:text-[28px]">
             {basic.title}
           </h1>
           {(basic.period || basic.role) && (
@@ -165,9 +165,10 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
                 >
                   {done && <Check className="size-4" aria-hidden />}
                   {locked && <Lock className="size-3.5" aria-hidden />}
-                  <span className="text-xs tabular-nums opacity-70">{i + 1}</span>
+                  <span className="text-xs tabular-nums">{i + 1}</span>
                   <span className="sm:hidden">{s.short}</span>
                   <span className="hidden sm:inline">{s.label}</span>
+                  {done && <span className="sr-only">(완료)</span>}
                   {nudge && (
                     <>
                       <span aria-hidden className="-mt-2 size-1.5 rounded-full bg-primary" />

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Info, Wand2 } from "lucide-react";
 import { DEMO } from "@/lib/mode";
 import type { QARound } from "@/lib/domain/types";
@@ -22,6 +22,22 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
   const toggleSkip = useAppStore((s) => s.toggleSkip);
   const [expanded, setExpanded] = useState(false);
 
+  // 펼치기·접기 버튼이 서로 바뀌며 사라지므로 키보드로 눌렀을 때만 위치를 옮긴다.
+  // 마우스·터치에는 하지 않는다 (휴대폰에서 답변 칸에 초점이 가면 키보드가 뜰 수 있어서)
+  const moved = useRef(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const expandRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    const body = bodyRef.current;
+    (expanded ? (body?.querySelector("textarea") ?? body?.querySelector("button")) : expandRef.current)?.focus({ preventScroll: true });
+  }, [expanded]);
+  const toggle = (e: MouseEvent, next: boolean) => {
+    moved.current = e.detail === 0;
+    setExpanded(next);
+  };
+
   if (collapsible && !expanded) {
     const answered = round.items.filter((i) => !i.skipped && i.answer.trim()).length;
     const skipped = round.items.filter((i) => i.skipped).length;
@@ -31,11 +47,12 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
           <p className="flex items-center gap-1.5 font-semibold">
             <CheckCircle2 className="size-4 shrink-0 text-primary" aria-hidden />
             {label ? `${label} · ` : ""}답변 {answered}개 제출함
-            {skipped > 0 && <span className="ml-1 font-normal text-ink-faint">· 기억 안 남 {skipped}개</span>}
+            {skipped > 0 && <span className="ml-1 font-normal text-ink-soft">· 기억 안 남 {skipped}개</span>}
           </p>
           <button
+            ref={expandRef}
             type="button"
-            onClick={() => setExpanded(true)}
+            onClick={(e) => toggle(e, true)}
             aria-expanded={false}
             className="press -my-2 inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 rounded-lg px-2 text-sm font-medium text-ink-soft sm:min-h-9"
           >
@@ -50,7 +67,7 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
                 <span className="mr-1 tabular-nums">Q{startNumber + i}.</span>
                 {item.question}
               </p>
-              <p className="line-clamp-2 text-ink">{item.skipped ? <span className="text-ink-faint">기억 안 남</span> : item.answer.trim() || <span className="text-ink-faint">답변 없음</span>}</p>
+              <p className="line-clamp-2 text-ink">{item.skipped ? <span className="text-ink-soft">기억 안 남</span> : item.answer.trim() || <span className="text-ink-soft">답변 없음</span>}</p>
             </li>
           ))}
         </ol>
@@ -59,12 +76,12 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={bodyRef} className="space-y-6">
       {collapsible && (
         <div className="flex justify-end">
           <button
             type="button"
-            onClick={() => setExpanded(false)}
+            onClick={(e) => toggle(e, false)}
             aria-expanded
             className="press inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-lg px-2 text-sm font-medium text-ink-soft sm:min-h-9"
           >
@@ -96,12 +113,12 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
         const fieldId = `a-${item.id}`;
         return (
           <div key={item.id}>
-            <label htmlFor={fieldId} className="block font-medium leading-relaxed break-keep">
+            <label htmlFor={fieldId} className="block font-medium leading-relaxed break-keep sm:text-lg sm:font-semibold">
               <span className="mr-1.5 text-primary-text tabular-nums">Q{startNumber + i}.</span>
               {item.question}
             </label>
             {item.reason && (
-              <p className="mt-1 flex items-start gap-1.5 text-sm text-ink-soft">
+              <p id={`${fieldId}-why`} className="mt-1 flex items-start gap-1.5 text-sm text-ink-soft">
                 <Info className="mt-0.5 size-3.5 shrink-0 text-ink-faint" aria-hidden />
                 {item.reason}
               </p>
@@ -114,6 +131,7 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
               ) : (
                 <AutoTextarea
                   id={fieldId}
+                  aria-describedby={item.reason ? `${fieldId}-why` : undefined}
                   value={item.answer}
                   onChange={(e) => updateAnswer(experienceId, round.id, item.id, e.target.value)}
                   placeholder="편하게 적어 주세요. 짧게, 반말로 써도 괜찮아요."
@@ -125,7 +143,6 @@ export default function RoundCard({ experienceId, round, startNumber = 1, label,
               <button
                 type="button"
                 onClick={() => toggleSkip(experienceId, round.id, item.id)}
-                aria-pressed={item.skipped}
                 // "기억 안 남" ↔ "답변 다시 쓰기"는 같은 글자 버튼 (상태는 위 점선 칸이 보여 줌, 파랑 = 선택 표시라 쓰지 않음)
                 className="min-h-11 cursor-pointer rounded-lg px-3 text-sm text-ink-soft transition-colors duration-150 hover:bg-subtle hover:text-ink sm:min-h-9"
               >

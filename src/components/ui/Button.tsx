@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 import { Loader2 } from "lucide-react";
 
 // 몽타주 Button: primary = Solid/Primary, secondary = Outlined/Assistive, ghost = Text
@@ -18,6 +18,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   loading?: boolean;
   size?: "md" | "sm";
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export default function Button({ variant = "primary", loading, size = "md", className = "", children, disabled, ...rest }: Props) {

@@ -28,6 +28,7 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
   const awaitingReview = last && last.submittedAt && !last.reviewed ? last : null;
   const ready = !!last && last.reviewed && !open && !!log.summary;
   const sectionRef = useStageFollow(!!open);
+  const commitSummary = useRef<(() => void) | null>(null);
 
   // 1) 첫 질문 자동 생성
   const questionsStatus = useAutoTask(`${id}:questions:${stage}`, log.rounds.length === 0, async () => {
@@ -82,12 +83,17 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
   const canSubmit = !!open && open.items.some((i) => i.skipped || i.answer.trim());
   const numberOffset = log.rounds.slice(0, -1).reduce((n, r) => n + r.items.length, 0);
   const next = nextStage(stage);
+  const enoughButton = (className: string) => (
+    <Button variant="ghost" className={className} onClick={() => submit(true)} title="지금까지 답한 내용으로 이 단계를 마칩니다">
+      충분해요, 다음으로
+    </Button>
+  );
 
   return (
     <section ref={sectionRef} tabIndex={-1} aria-labelledby={`stage-${stage}`} className="scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-surface p-4 focus:outline-none sm:p-6 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
       <header className="mb-5">
         <p className="text-sm font-semibold text-primary-text">{def.name}</p>
-        <h2 id={`stage-${stage}`} className="mt-0.5 text-lg font-bold break-keep sm:text-xl">
+        <h2 id={`stage-${stage}`} className="mt-0.5 text-lg font-bold break-keep sm:text-2xl">
           {def.title}
         </h2>
         {def.hint && <p className="mt-1 text-sm text-ink-faint break-keep">{def.hint}</p>}
@@ -121,31 +127,27 @@ export default function ActiveStage({ experience, stage }: { experience: Experie
             startNumber={numberOffset + 1}
             label={open.kind === "followup" ? `추가 질문 ${open.items.length}개 — 비어 있거나 모호한 부분만 여쭤요` : undefined}
           />
-          <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            {/* 추가 질문에서만: 첫 질문은 "기억 안 남"으로 넘긴다 (첫 질문에서 넘기면 빈 단계가 생김, 사용자 결정) */}
-            {open.kind === "followup" && (
-              <Button
-                variant="ghost"
-                onClick={() => submit(true)}
-                title="지금까지 답한 내용으로 이 단계를 마칩니다"
-              >
-                충분해요, 다음으로
-              </Button>
-            )}
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            {/* 추가 질문에서만: 첫 질문은 "기억 안 남"으로 넘긴다 (첫 질문에서 넘기면 빈 단계가 생김, 사용자 결정).
+                휴대폰은 [답변 제출]이 위, PC는 오른쪽이라 키보드 순서가 보이는 순서와 같도록 자리마다 따로 둔다 */}
+            {open.kind === "followup" && enoughButton("max-sm:hidden")}
             <Button disabled={!canSubmit} onClick={() => submit()}>
               <Send className="size-4" aria-hidden />
               답변 제출
             </Button>
+            {open.kind === "followup" && enoughButton("sm:hidden")}
           </div>
         </div>
       )}
 
       {ready && (
         <div ref={summaryRef} tabIndex={-1} className="scroll-mt-[calc(var(--top-offset)+5rem)] space-y-4 focus:outline-none lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
-          <SummaryCard experienceId={id} stage={stage} summary={log.summary!} edited={log.summaryEdited} />
+          <SummaryCard experienceId={id} stage={stage} summary={log.summary!} edited={log.summaryEdited} commitRef={commitSummary} />
           <div className="flex justify-end">
             <Button
+              className="w-full sm:w-auto"
               onClick={() => {
+                commitSummary.current?.();
                 followNextStage();
                 advanceStage(id, stage);
               }}

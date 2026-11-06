@@ -14,7 +14,7 @@ export default function EmptyCompetency({ competencyId }: { competencyId: Compet
         <GlassOrb competencyId={competencyId} name="" count={0} selected={false} compact />
       </div>
       <p className="mt-5 text-sm font-medium text-ink-faint">{c.name}</p>
-      <h3 className="mt-1 text-lg font-bold break-keep">이 역량을 채울 경험을 찾아볼까요?</h3>
+      <h3 className="mt-1 text-lg font-semibold break-keep">이 역량을 채울 경험을 찾아볼까요?</h3>
       <p className="mt-2 max-w-md text-ink-soft break-keep">
         {c.hint}
         <br />

@@ -7,9 +7,9 @@ import Button from "@/components/ui/Button";
 import { followNextStage } from "@/components/interview/useStageFollow";
 
 const FIELDS = [
-  { key: "title", label: "경험명", placeholder: "예) 일본 여행 콘텐츠 탐색·저장 서비스 팀 프로젝트", required: true },
+  { key: "title", label: "경험명", placeholder: "예) 일본 여행 콘텐츠 서비스 팀 프로젝트", required: true },
   { key: "period", label: "시기", placeholder: "예) 2025년 8~9월, 2개월", required: false },
-  { key: "role", label: "역할", placeholder: "예) 유저 리서치, 화면 디자인, 디자인 시스템 구축", required: false },
+  { key: "role", label: "역할", placeholder: "예) 유저 리서치, 화면 디자인", required: false },
 ] as const;
 
 export default function NewExperienceForm() {

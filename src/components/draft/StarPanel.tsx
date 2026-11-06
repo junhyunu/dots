@@ -162,7 +162,7 @@ export default function StarPanel({ experience }: { experience: Experience }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-lg font-bold sm:text-xl">STAR 경험 원고</h2>
+          <h2 className="text-lg font-bold sm:text-2xl">STAR 경험 원고</h2>
           <p className="mt-1 text-sm text-ink-soft">답변에 없는 수치·성과·감정은 넣지 않았어요. 블록마다 직접 고치거나 다시 생성할 수 있어요.</p>
         </div>
         {star && (

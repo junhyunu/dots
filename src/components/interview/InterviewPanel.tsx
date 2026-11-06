@@ -34,7 +34,10 @@ function Progress({ experience }: { experience: Experience }) {
             >
               {s.state === "done" ? <Check className="size-3.5" aria-hidden /> : i + 1}
             </span>
-            <span className={`text-xs ${s.state === "pending" ? "text-ink-faint" : "text-ink"}`}>{s.name}</span>
+            <span className={`text-xs ${s.state === "pending" ? "text-ink-faint" : "text-ink"}`}>
+              {s.name}
+              {s.state === "done" && <span className="sr-only"> (완료)</span>}
+            </span>
           </div>
           {i < steps.length - 1 && (
             <span aria-hidden className={`mx-1 mb-5 h-0.5 flex-1 ${s.state === "done" ? "bg-primary-fill" : "bg-line"}`} />

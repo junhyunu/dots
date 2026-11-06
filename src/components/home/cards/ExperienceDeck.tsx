@@ -31,7 +31,7 @@ function Row({ item, cid, open, onToggle, rowRef }: {
           onClick={onToggle}
           aria-expanded={open}
           aria-controls={panelId}
-          className={`flex min-h-14 w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors duration-150 sm:px-5 ${
+          className={`flex min-h-14 w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors duration-150 focus-visible:rounded-[15px] focus-visible:[outline-offset:-3px] sm:px-5 ${
             open ? "bg-subtle/60" : "hover:bg-subtle/60"
           }`}
         >

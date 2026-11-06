@@ -23,10 +23,10 @@ function Cell({ title, icon: Icon, children, className = "", emphasis = false, b
       className={`flex flex-col rounded-xl border p-4 ${emphasis ? "border-primary-soft-line bg-primary-soft" : "border-line bg-surface"} ${className}`}
     >
       <header className="mb-3 flex items-center justify-between gap-2 text-sm text-ink-soft">
-        {badge ?? <h4 className="font-medium">{title}</h4>}
+        {badge ?? <h5 className="font-medium">{title}</h5>}
         <Icon className="size-4 text-ink-faint" aria-hidden />
       </header>
-      {badge && <h4 className="mb-1 text-sm font-medium text-ink-soft">{title}</h4>}
+      {badge && <h5 className="mb-1 text-sm font-medium text-ink-soft">{title}</h5>}
       <div className="leading-relaxed text-ink">{children}</div>
     </section>
   );
@@ -54,7 +54,7 @@ function ClampText({ text }: { text: string }) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="press -mx-2 mt-1 inline-flex min-h-11 cursor-pointer items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-ink-soft sm:min-h-8"
+          className="press -mx-2 mt-1 inline-flex min-h-11 cursor-pointer items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-ink-soft sm:pointer-fine:min-h-8"
         >
           {open ? "접기" : "더 보기"}
           {open ? <ChevronUp className="size-4" aria-hidden /> : <ChevronDown className="size-4" aria-hidden />}
@@ -89,7 +89,7 @@ function StarDownload({ item }: { item: ShowcaseExperience }) {
   };
   return (
     <section aria-labelledby={`dl-${item.id}`} className="border-t border-line px-5 py-4 sm:px-6">
-      <h4 id={`dl-${item.id}`} className="text-sm text-ink-soft">문서로 내려받기</h4>
+      <h5 id={`dl-${item.id}`} className="text-sm text-ink-soft">문서로 내려받기</h5>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {FORMATS.map(({ format, label }) => (
           <button
@@ -98,7 +98,7 @@ function StarDownload({ item }: { item: ShowcaseExperience }) {
             onClick={() => run(format)}
             disabled={busy !== null}
             aria-label={`${item.basic.title} 문서를 ${label} 파일로 내려받기`}
-            className="press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2.5 text-sm font-semibold disabled:cursor-wait sm:min-h-9"
+            className="press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2.5 text-sm font-semibold disabled:cursor-wait sm:pointer-fine:min-h-9"
           >
             {busy === format ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Download className="size-4" aria-hidden />}
             {label}
@@ -118,7 +118,7 @@ function LinkButton({ href, icon: Icon, children, primary = false, outline = fal
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap press rounded-lg px-2.5 text-[15px] font-semibold sm:min-h-10 ${
+      className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap press rounded-lg px-2.5 text-[15px] font-semibold sm:pointer-fine:min-h-10 ${
         primary ? "bg-primary-fill text-on-primary" : outline ? "border border-primary bg-surface text-primary-text" : "border border-line-strong bg-surface"
       }`}
     >
@@ -148,7 +148,7 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
       {/* 왼쪽 프로필 영역 */}
       <aside className="border-b border-line md:border-r md:border-b-0">
         <div className="p-5 sm:p-6">
-          <h3 className="text-xl font-bold leading-snug break-keep">{item.basic.title}</h3>
+          <h4 className="text-xl font-semibold leading-snug break-keep">{item.basic.title}</h4>
           <p className="mt-1 text-sm text-ink-soft break-keep">{[item.basic.period, item.basic.role].filter(Boolean).join(" · ")}</p>
 
           <div className="mt-5 flex flex-wrap gap-1.5">
@@ -164,7 +164,7 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
             <button
               type="button"
               onClick={copy}
-              className="press inline-flex min-h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-line-strong bg-surface px-2.5 text-[15px] font-semibold sm:min-h-10"
+              className="press inline-flex min-h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-line-strong bg-surface px-2.5 text-[15px] font-semibold sm:pointer-fine:min-h-10"
             >
               {copied ? <Check className="size-4 text-ok" aria-hidden /> : <Copy className="size-4" aria-hidden />}
               {copied ? "복사했어요" : "복사"}
@@ -178,7 +178,7 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
         </div>
 
         <details open className="group border-t border-line px-5 py-4 sm:px-6">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-1.5 text-sm text-ink-soft sm:min-h-9 [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-1.5 text-sm text-ink-soft sm:pointer-fine:min-h-9 [&::-webkit-details-marker]:hidden">
             세부 정보
             {/* 닫힘 = 아래, 열림 = 위 */}
             <ChevronDown className="size-4 transition-transform duration-150 group-open:rotate-180" aria-hidden />
@@ -191,12 +191,12 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
             <dt className="text-ink-faint">역할</dt>
             <dd className="break-keep">{item.basic.role || "—"}</dd>
             <dt className="text-ink-faint">대표 역량</dt>
-            <dd>{primary ? <span className="rounded-md border border-line-strong px-2 py-0.5 text-sm">{competencyName(primary.competencyId)}</span> : "—"}</dd>
+            <dd>{primary ? <span className="rounded-md border border-line-strong bg-surface px-2 py-0.5 text-sm text-primary-text">{competencyName(primary.competencyId)}</span> : "—"}</dd>
             <dt className="text-ink-faint">보조 역량</dt>
             <dd className="flex flex-wrap gap-1.5">
               {secondaries.length
                 ? secondaries.map((m) => (
-                    <span key={m.competencyId} className="rounded-md bg-subtle px-2 py-0.5 text-sm">
+                    <span key={m.competencyId} className="rounded-md bg-subtle px-2 py-0.5 text-sm text-ink-soft">
                       {competencyName(m.competencyId)}
                     </span>
                   ))
@@ -209,16 +209,16 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
 
       {/* 오른쪽: 한눈에 보기 */}
       <div className="p-4 sm:p-6">
-        <h3 className="mb-3 flex items-center gap-2 font-semibold">
+        <h4 className="mb-3 flex items-center gap-2 font-semibold">
           <LayoutGrid className="size-4 text-ink-faint" aria-hidden />
           한눈에 보기
-        </h3>
+        </h4>
         <div className="grid gap-3 lg:grid-cols-3">
           <Cell title="Summary" icon={Sparkles} className="lg:col-span-2">
             {summary ? (
               <>
                 <p className="text-sm font-semibold text-ink-soft">{summary.keyword}</p>
-                <p className="mt-1 text-[17px] font-medium">{summary.sentence}</p>
+                <p className="mt-1 text-base font-medium">{summary.sentence}</p>
               </>
             ) : (
               <p className="text-ink-faint">역량 키워드가 아직 없어요.</p>
@@ -255,10 +255,10 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
           </Cell>
         </div>
 
-        <h3 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
+        <h4 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
           <Footprints className="size-4 text-ink-faint" aria-hidden />
           행동
-        </h3>
+        </h4>
         <ol className="divide-y divide-line overflow-hidden rounded-xl border border-line">
           {item.star.actions.map((a, i) => {
             const on = highlighted.has(i);
@@ -284,16 +284,16 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
           })}
         </ol>
 
-        <h3 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
+        <h4 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
           <Trophy className="size-4 text-ink-faint" aria-hidden />
           결과
-        </h3>
+        </h4>
         <p className="rounded-xl border border-line p-4 text-[15px] leading-relaxed">{item.star.result}</p>
 
-        <h3 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
+        <h4 className="mt-6 mb-3 flex items-center gap-2 font-semibold">
           <BookOpen className="size-4 text-ink-faint" aria-hidden />
           배운 점
-        </h3>
+        </h4>
         <p className="rounded-xl border border-line p-4 text-[15px] leading-relaxed">{item.star.learning}</p>
       </div>
     </div>

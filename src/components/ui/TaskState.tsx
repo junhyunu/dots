@@ -15,7 +15,7 @@ export default function TaskState({ status, loadingText }: { status: TaskStatus 
   }
   return (
     <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3">
-      <div className="flex items-start gap-2 text-danger">
+      <div className="flex items-start gap-2 text-danger-text">
         <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
         <p className="text-[15px]">{status.message}</p>
       </div>

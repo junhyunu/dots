@@ -47,7 +47,7 @@ export default function HomePage() {
       {/* 상단 바: 로고 + 서비스명 / 의견 남기기 · 테마 전환. 아이콘은 PC 24px(로고 글자와 맞춤)·휴대폰 20px (2026-11-04 사용자 결정) */}
       <header className="sticky top-(--top-offset) z-20 border-b border-line bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href={href("/")} aria-label="Dots 닷츠 홈" className="flex items-center rounded-lg">
+          <Link href={href("/")} aria-label="Dots 닷츠 홈" className="flex min-h-11 items-center rounded-lg">
             <DotsWordmark large />
           </Link>
           <div className="flex items-center gap-0.5">
@@ -57,14 +57,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* 중앙 상단: 타이틀 (ux-writing C안) */}
         <section aria-labelledby="hero-title" className="flex flex-col items-center pb-12 pt-16 text-center sm:pb-16 sm:pt-24">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-sm text-ink-soft">
             <Sparkles className="size-3.5" aria-hidden />
             자기소개서·면접 경험 정리
           </p>
-          <h1 id="hero-title" className="mt-6 text-[40px] font-extrabold leading-[1.15] tracking-[-0.03em] break-keep sm:text-6xl lg:text-7xl">
+          <h1 id="hero-title" className="mt-6 text-[36px] font-bold leading-[1.334] tracking-[-0.027em] break-keep sm:text-[56px] sm:leading-[1.286] sm:tracking-[-0.0319em]">
             점을 이으면,
             <br />
             나의 이야기가 돼요
@@ -76,7 +76,7 @@ export default function HomePage() {
           </p>
           <Link
             href={href("/work?new=1")}
-            className="press rainbow-cta mt-9 inline-flex min-h-12 items-center gap-2 rounded-lg px-6 text-[17px] font-semibold"
+            className="press rainbow-cta mt-9 inline-flex min-h-12 items-center gap-2 rounded-lg px-6 text-base font-semibold"
           >
             경험 정리하기
             <ArrowRight className="size-4" aria-hidden />
@@ -85,11 +85,13 @@ export default function HomePage() {
 
         {/* 역량 구슬 7개 */}
         <section aria-label="역량" className="pb-10 md:pt-4 md:pb-14">
+          <h2 className="sr-only">역량</h2>
           <OrbGroup selected={selected} counts={counts} onSelect={select} />
         </section>
 
         {/* 경험 결과물 카드 */}
         <section aria-label="선택한 역량의 경험 결과물" className="pb-16">
+          <h2 className="sr-only">선택한 역량의 경험 결과물</h2>
           {showExamples && (
             <p className="mb-4 text-center text-sm text-ink-faint break-keep">
               아직 완성한 경험이 없어 예시를 보여 드려요. 첫 경험을 완성하면 예시는 사라져요.
@@ -102,7 +104,7 @@ export default function HomePage() {
           )}
           <CompetencyTabs selected={selected} counts={counts} onSelect={select} />
         </section>
-      </div>
+      </main>
     </div>
   );
 }

@@ -32,6 +32,7 @@
   --color-ok: #007a33;
   --color-ok-soft: #e6f8ec;
   --color-danger: #e52222;        /* 4.6:1 */
+  --color-danger-text: #c81e1e;   /* danger-soft 바탕 위 글자 5.03:1 */
   --color-danger-soft: #feecec;
 }
 
@@ -56,6 +57,7 @@
   --color-ok: #1ed45a;
   --color-ok-soft: #13291b;
   --color-danger: #ff6363;
+  --color-danger-text: #ff6363;
   --color-danger-soft: #36201f;
 }
 

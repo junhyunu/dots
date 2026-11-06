@@ -25,7 +25,12 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
   onSelect: (id: CompetencyId) => void;
 }) {
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  // 접거나 펴면 누른 버튼이 사라지므로, 키보드 위치를 바뀐 버튼으로 옮긴다
+  const focusAfterToggle = useRef(false);
+  const expandRef = useRef<HTMLButtonElement>(null);
+  const collapseRef = useRef<HTMLButtonElement>(null);
   const toggle = (next: boolean) => {
+    focusAfterToggle.current = true;
     setCollapsed(next);
     try {
       if (next) localStorage.setItem(KEY, "1");
@@ -46,6 +51,25 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
     return () => io.disconnect();
   }, []);
   const hidden = collapsed && !inView;
+  // 숨겨진(inert) 동안에는 초점을 받지 못하므로 다시 보일 때 옮긴다
+  useEffect(() => {
+    if (!focusAfterToggle.current || hidden) return;
+    focusAfterToggle.current = false;
+    (collapsed ? expandRef : collapseRef).current?.focus({ preventScroll: true });
+  }, [collapsed, hidden]);
+
+  // 좁은 화면에서 탭이 넘칠 때 고른 역량을 막대 가운데로 데려온다. 페이지는 움직이지 않게 막대만 옮긴다
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const firstRef = useRef(true);
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    const tab = scroller?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!scroller || !tab) return;
+    const left = tab.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    scroller.scrollTo({ left: left - (scroller.clientWidth - tab.offsetWidth) / 2, behavior: firstRef.current || reduce ? "auto" : "smooth" });
+    firstRef.current = false;
+  }, [selected, collapsed]);
   const SelectedIcon = COMPETENCY_ICONS[selected];
   // 그림자는 화면 끝까지의 간격(16px) 안에서 다 흐려지게 짧게: 아래 16px·옆 10px (길면 화면 끝에서 잘려 보임)
   const panel = "pointer-events-auto rounded-2xl border border-line bg-surface/90 shadow-[0_6px_16px_-6px_rgb(0_0_0/0.35)] backdrop-blur";
@@ -67,6 +91,7 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
     >
       {collapsed ? (
         <button
+          ref={expandRef}
           type="button"
           onClick={() => toggle(false)}
           aria-expanded={false}
@@ -82,7 +107,7 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
       ) : (
         // overflow-hidden: 모바일에서 옆으로 넘치는 탭 목록이 페이지 너비를 넓혀(화면이 축소되어) 막대가 아래로 밀려 사라지던 문제를 막는다
         <div className={`${panel} flex max-w-full items-center overflow-hidden p-1.5`}>
-          <div className="min-w-0 overflow-x-auto [scrollbar-width:none]">
+          <div ref={scrollerRef} className="min-w-0 overflow-x-auto [scrollbar-width:none]">
             <ul className="flex gap-1">
               {COMPETENCIES.map((c) => {
                 const Icon = COMPETENCY_ICONS[c.id];
@@ -93,7 +118,7 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
                       type="button"
                       onClick={() => onSelect(c.id)}
                       aria-current={active ? "true" : undefined}
-                      className={`flex min-h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 text-sm transition-colors duration-150 ${
+                      className={`flex min-h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 text-sm transition-colors duration-150 focus-visible:[outline-offset:-2px] ${
                         active ? "border-primary-soft-line bg-primary-soft font-semibold text-primary-text" : "border-transparent text-ink-soft hover:text-ink"
                       }`}
                     >
@@ -109,12 +134,13 @@ export default function CompetencyTabs({ selected, counts, onSelect }: {
           {/* 접기: 스크롤되는 탭 목록 밖에 두어 항상 보이게 */}
           <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
           <button
+            ref={collapseRef}
             type="button"
             onClick={() => toggle(true)}
             aria-expanded
             aria-label="역량 탭 접기"
             title="접기"
-            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-ink-faint transition-colors duration-150 hover:bg-subtle hover:text-ink"
+            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-ink-faint transition-colors duration-150 hover:bg-subtle hover:text-ink focus-visible:[outline-offset:-2px]"
           >
             <ChevronRight className="size-4" aria-hidden />
           </button>

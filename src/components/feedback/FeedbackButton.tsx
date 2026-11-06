@@ -201,7 +201,7 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
               )}
 
               {send.state === "error" && (
-                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
+                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger-text">
                   {send.message}
                   <div className="mt-2 flex gap-2">
                     <Button type="submit" variant="secondary" size="sm">

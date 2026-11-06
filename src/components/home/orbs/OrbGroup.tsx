@@ -166,10 +166,15 @@ export default function OrbGroup({ selected, counts, onSelect }: Props) {
     track.scrollTo({ left: slide.offsetLeft - (track.clientWidth - slide.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
   }, [selected]);
 
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
   const step = (dir: 1 | -1) => {
     const i = IDS.indexOf(selected);
     const next = IDS[Math.min(IDS.length - 1, Math.max(0, i + dir))];
     if (next !== selected) onSelect(next);
+    // 끝까지 가면 누른 버튼이 꺼져 키보드 위치를 잃으므로 반대쪽 버튼으로 옮긴다
+    if (next === IDS[IDS.length - 1]) prevRef.current?.focus({ preventScroll: true });
+    else if (next === IDS[0]) nextRef.current?.focus({ preventScroll: true });
   };
 
   return (
@@ -215,6 +220,7 @@ export default function OrbGroup({ selected, counts, onSelect }: Props) {
         </div>
         <div className="mt-1 flex items-center justify-center gap-3">
           <button
+            ref={prevRef}
             type="button"
             onClick={() => step(-1)}
             disabled={selected === IDS[0]}
@@ -227,6 +233,7 @@ export default function OrbGroup({ selected, counts, onSelect }: Props) {
             {IDS.indexOf(selected) + 1} / {IDS.length}
           </span>
           <button
+            ref={nextRef}
             type="button"
             onClick={() => step(1)}
             disabled={selected === IDS[IDS.length - 1]}
