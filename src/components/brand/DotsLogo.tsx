@@ -45,8 +45,8 @@ export function DotsWordmark({ large = false }: { large?: boolean }) {
     <span className={`inline-flex items-baseline ${large ? "gap-2" : "gap-1.5"}`}>
       <span className={`font-bold tracking-tight ${large ? "text-xl sm:text-2xl" : "text-lg"}`}>
         <span className="sr-only">Dots</span>
-        {/* 마우스를 올리거나 키보드로 오면 글자가 차례로 굴러 "닷츠"로 바뀐다. 모션은 globals.css의 .wm-out·.wm-in */}
-        <span aria-hidden className="relative inline-flex items-baseline">
+        {/* 마우스를 올리거나 키보드로 오면 Dots가 차례로 창 위로 빠지고 "닷츠"가 아래에서 올라온다. 모션은 globals.css의 .wm-mask·.wm-out·.wm-in */}
+        <span aria-hidden className="wm-mask relative inline-flex items-baseline">
           <span className="wm-out [--i:0]">D</span>
           {/* 로고 원은 소문자 o 높이(약 0.6em)로, 그림 둘레 여백만큼 살짝 내려 글자 아랫선에 앉힌다 */}
           <span className="wm-out [--i:1]">
