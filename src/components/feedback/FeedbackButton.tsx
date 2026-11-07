@@ -113,8 +113,10 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
             if (e.target === e.currentTarget) close();
           }}
           onClose={() => setOpen(false)}
-          className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-ink/30"
+          // 스크롤은 안쪽 칸에서: 창 자체가 스크롤하면 스크롤 막대가 둥근 모서리를 네모나게 덮는다
+          className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-ink/30"
         >
+          <div className="max-h-[calc(100dvh-2rem-2px)] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
           {send.state === "sent" ? (
             <div className="flex flex-col items-center p-6 text-center">
               <CheckCircle2 className="size-10 text-ok" aria-hidden />
@@ -229,6 +231,7 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
               </div>
             </form>
           )}
+          </div>
         </dialog>
       )}
     </>

@@ -27,13 +27,26 @@ export default function AutoTextarea({ className = "", value, minRows = 3, maxHe
     return () => ro.disconnect();
   }, []);
   return (
-    <textarea
-      ref={ref}
-      value={value}
-      rows={minRows}
-      style={maxHeight ? { maxHeight, overflowY: "auto" } : undefined}
-      className={`block w-full resize-none rounded-lg border border-line-strong bg-surface p-3 text-base leading-[1.625] text-ink shadow-[0_1px_2px_-1px_rgb(23_23_23/0.1)] placeholder:text-placeholder focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-subtle disabled:text-ink-soft ${className}`}
-      {...rest}
-    />
+    maxHeight ? (
+      // 칸 안에서 스크롤할 때: 테두리·둥근 모서리는 바깥 상자가 맡고 안쪽을 잘라서, 스크롤 막대가 모서리를 네모나게 덮지 않게 한다
+      <div className={`overflow-hidden rounded-lg border border-line-strong bg-surface shadow-[0_1px_2px_-1px_rgb(23_23_23/0.1)] focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 ${className}`}>
+        <textarea
+          ref={ref}
+          value={value}
+          rows={minRows}
+          style={{ maxHeight, overflowY: "auto" }}
+          className="block w-full resize-none bg-transparent p-3 text-base leading-[1.625] text-ink [scrollbar-width:thin] placeholder:text-placeholder focus:outline-none disabled:bg-subtle disabled:text-ink-soft"
+          {...rest}
+        />
+      </div>
+    ) : (
+      <textarea
+        ref={ref}
+        value={value}
+        rows={minRows}
+        className={`block w-full resize-none rounded-lg border border-line-strong bg-surface p-3 text-base leading-[1.625] text-ink shadow-[0_1px_2px_-1px_rgb(23_23_23/0.1)] placeholder:text-placeholder focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-subtle disabled:text-ink-soft ${className}`}
+        {...rest}
+      />
+    )
   );
 }
