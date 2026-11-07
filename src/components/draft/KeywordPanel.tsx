@@ -228,13 +228,18 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
           </section>
 
           {primaryId ? (
-            <p className="text-sm text-ink-soft">
-              <Star className="mr-1 inline size-3.5 fill-primary text-primary-text" aria-hidden />
-              대표 키워드는 대표 역량({competencyName(primaryId)})의 키워드예요. 바꾸려면{" "}
-              <button type="button" onClick={onMatch} className="cursor-pointer font-semibold text-primary-text underline underline-offset-2">
-                역량 연결
-              </button>
-              에서 대표 역량을 바꿔 주세요.
+            // 별은 첫 줄 높이(1lh)의 가운데에 (스토리 화면 안내와 같은 정렬)
+            <p className="flex items-start gap-1.5 text-sm text-ink-soft">
+              <span className="flex h-[1lh] shrink-0 items-center">
+                <Star className="size-3.5 fill-primary text-primary-text" aria-hidden />
+              </span>
+              <span>
+                대표 키워드는 대표 역량({competencyName(primaryId)})의 키워드예요. 바꾸려면{" "}
+                <button type="button" onClick={onMatch} className="cursor-pointer font-semibold text-primary-text underline underline-offset-2">
+                  역량 연결
+                </button>
+                에서 대표 역량을 바꿔 주세요.
+              </span>
             </p>
           ) : (
             // 완성한 경험에서 대표를 뺀 경우: "(없음)의 키워드" 대신 지금 상태와 할 일을 알려 준다

@@ -130,8 +130,11 @@ function StoryOptions({ experience, onCreated, onCancel }: { experience: Experie
 
       {rep && (
         <p className="flex items-start gap-1.5 text-sm text-ink-soft">
-          <StarIcon className="mt-0.5 size-3.5 shrink-0 fill-primary text-primary-text" aria-hidden />
-          소제목은 역량 키워드를 바탕으로 제안해요. 문항이 없으면 대표 키워드 ‘{rep.keyword}’를 써요.
+          {/* 별은 첫 줄 높이(1lh)의 가운데에 (역량 키워드 화면 안내와 같은 정렬) */}
+          <span className="flex h-[1lh] shrink-0 items-center">
+            <StarIcon className="size-3.5 fill-primary text-primary-text" aria-hidden />
+          </span>
+          <span>소제목은 역량 키워드를 바탕으로 제안해요. 문항이 없으면 대표 키워드 ‘{rep.keyword}’를 써요.</span>
         </p>
       )}
 
