@@ -2,14 +2,14 @@
 // 역량 키워드: 역량 연결에서 정한 역량마다 키워드 1개. 키워드 버튼을 누르면 그 키워드의 한 문장이 보인다.
 // 대표 키워드 = 대표 역량의 키워드 (여기서는 바꾸지 않고 역량 연결에서 바꾼다, 사용자 결정 2026-11-01).
 // 마지막 단계라 [경험 완성하기]와 완성 안내가 여기에 있다.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, CheckCircle2, Home, Pencil, PenLine, Plus, RefreshCw, Star } from "lucide-react";
 import Link from "next/link";
 import { generate } from "@/lib/api";
 import { competencyName } from "@/lib/domain/competencies";
 import { starBody } from "@/lib/domain/context";
 import { missingKeywordComps } from "@/lib/domain/keywords";
-import type { CompetencyId, Experience } from "@/lib/domain/types";
+import type { CompetencyId, Experience, KeywordCandidate } from "@/lib/domain/types";
 import { getStore, useAppStore } from "@/lib/store/useAppStore";
 import { runTask, useAutoTask, useTask } from "@/lib/store/useTaskRunner";
 import AutoTextarea from "@/components/ui/AutoTextarea";
@@ -34,6 +34,65 @@ async function draftKeywords(id: string, only?: CompetencyId[]) {
   getStore().setKeywords(id, got.filter((c) => c !== null));
 }
 
+type KeywordText = Pick<KeywordCandidate, "keyword" | "sentence">;
+
+/** 키워드 수정 칸. [저장] 없이 다른 키워드·다른 단계로 가도 고친 글을 잃지 않게, 닫힐 때 저장한다
+ *  (비었거나 그대로면 저장하지 않음, STAR 원고 블록과 같은 규칙) */
+function KeywordEditor({ candidate, onSave, onClose }: { candidate: KeywordCandidate; onSave: (t: KeywordText) => void; onClose: () => void }) {
+  const [draft, setDraft] = useState({ keyword: candidate.keyword, sentence: candidate.sentence });
+  const next = { keyword: draft.keyword.trim(), sentence: draft.sentence.trim() };
+  const empty = !next.keyword || !next.sentence;
+  const changed = next.keyword !== candidate.keyword || next.sentence !== candidate.sentence;
+
+  const pending = useRef<KeywordText | null>(null);
+  pending.current = !empty && changed ? next : null;
+  const saveRef = useRef(onSave);
+  saveRef.current = onSave;
+  useEffect(() => () => {
+    if (pending.current) saveRef.current(pending.current);
+  }, []);
+
+  // 열면 키워드 칸으로 키보드 위치를 옮긴다
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => inputRef.current?.focus({ preventScroll: true }), []);
+
+  const finish = (save: boolean) => {
+    if (save && pending.current) onSave(pending.current);
+    pending.current = null;
+    onClose();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label htmlFor="kw-k" className="mb-1 block text-sm font-medium">키워드</label>
+        <input
+          ref={inputRef}
+          id="kw-k"
+          value={draft.keyword}
+          onChange={(e) => setDraft((d) => ({ ...d, keyword: e.target.value }))}
+          className="min-h-11 w-full rounded-lg border border-line-strong px-3 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+      <div>
+        <label htmlFor="kw-s" className="mb-1 block text-sm font-medium">한 문장</label>
+        <AutoTextarea id="kw-s" value={draft.sentence} onChange={(e) => setDraft((d) => ({ ...d, sentence: e.target.value }))} minRows={2} />
+      </div>
+      {empty && (
+        <p id="kw-empty" role="alert" className="text-sm text-danger-text">
+          키워드와 한 문장을 모두 적어야 저장할 수 있어요. 그대로 두려면 [취소]를 눌러 주세요.
+        </p>
+      )}
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={() => finish(false)}>취소</Button>
+        <Button size="sm" disabled={empty} aria-describedby={empty ? "kw-empty" : undefined} onClick={() => finish(true)}>
+          저장
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function KeywordPanel({ experience, onStory, onMatch }: { experience: Experience; onStory: () => void; onMatch: () => void }) {
   const { id, keyword, matches, matchesConfirmed } = experience;
   const editKeyword = useAppStore((s) => s.editKeyword);
@@ -47,7 +106,6 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
 
   const [viewing, setViewing] = useState<CompetencyId | null>(null);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({ keyword: "", sentence: "" });
 
   const candidates = keyword?.candidates ?? [];
   const current = candidates.find((c) => c.competencyId === viewing) ?? candidates[0];
@@ -57,11 +115,33 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
   const rewriteStatus = useTask(rewriteKey);
   const hasStory = experience.stories.some((s) => s.body);
 
-  const startEdit = () => {
-    if (!current) return;
-    setDraft({ keyword: current.keyword, sentence: current.sentence });
-    setEditing(true);
-  };
+  // 키보드 위치: 누른 버튼이 사라지거나 꺼지면 페이지 전체로 돌아가므로 직접 옮긴다
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const editRef = useRef<HTMLButtonElement>(null);
+  const rewriteRef = useRef<HTMLButtonElement>(null);
+  const doneRef = useRef<HTMLDivElement>(null);
+  const lost = () => !document.activeElement || document.activeElement === document.body;
+  // [다음: 역량 키워드]로 들어오면 누른 버튼이 사라지므로 제목으로
+  useEffect(() => {
+    if (lost()) titleRef.current?.focus({ preventScroll: true });
+  }, []);
+  // 수정을 끝내면 [수정] 버튼으로 (다른 키워드를 눌러 닫혔으면 그 키워드 버튼에 그대로)
+  const backToEdit = useRef(false);
+  useEffect(() => {
+    if (editing || !backToEdit.current) return;
+    backToEdit.current = false;
+    editRef.current?.focus({ preventScroll: true });
+  }, [editing]);
+  // [경험 완성하기]를 누르면 완성 안내가 아래에 생기므로 화면과 키보드 위치를 그리로 옮긴다
+  const justCompleted = useRef(false);
+  useEffect(() => {
+    const box = doneRef.current;
+    if (!matchesConfirmed || !justCompleted.current || !box) return;
+    justCompleted.current = false;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    box.focus({ preventScroll: true });
+  }, [matchesConfirmed]);
 
   const rewrite = async () => {
     if (!current) return;
@@ -70,15 +150,15 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
       body: "이 역량의 키워드와 문장을 새로 받아요. 지금 문장은 사라져요.",
       confirmLabel: "다시 쓰기",
     });
-    if (!ok) return;
-    setEditing(false);
-    void runTask(rewriteKey, () => draftKeywords(id, [current.competencyId]));
+    if (ok) await runTask(rewriteKey, () => draftKeywords(id, [current.competencyId]));
+    // 확인 창이 닫히고, 기다리는 동안 버튼이 꺼져 잃은 키보드 위치를 [다시 쓰기]로 돌려놓는다
+    if (lost()) rewriteRef.current?.focus({ preventScroll: true });
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-bold sm:text-xl">역량 키워드</h2>
+        <h2 ref={titleRef} tabIndex={-1} className="text-lg font-bold focus:outline-none sm:text-xl">역량 키워드</h2>
         <p className="mt-1 text-sm text-ink-soft">연결한 역량마다 이 경험으로 어필할 키워드를 하나씩 만들었어요. 키워드를 누르면 그 키워드를 설명하는 한 문장이 보여요.</p>
       </div>
 
@@ -99,11 +179,12 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
                     setViewing(c.competencyId);
                     setEditing(false);
                   }}
+                  // 선택 표시는 스토리 화면(글자 수·글 목록)과 같은 옅은 파랑. 진한 파랑은 [경험 완성하기] 하나만
                   className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-[15px] transition-colors duration-150 ${
-                    isViewing ? "border-primary bg-primary-fill text-on-primary" : "border-line-strong bg-surface text-ink hover:border-primary hover:text-primary-text"
+                    isViewing ? "border-primary bg-primary-soft font-semibold text-primary-text" : "border-line-strong bg-surface text-ink hover:bg-subtle"
                   }`}
                 >
-                  {isRep && <Star className={`size-3.5 ${isViewing ? "fill-on-primary" : "fill-primary text-primary-text"}`} aria-label="대표" />}
+                  {isRep && <Star className="size-3.5 fill-primary text-primary-text" aria-label="대표" />}
                   {c.keyword}
                 </button>
               );
@@ -112,34 +193,15 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
 
           <section aria-live="polite" className="rounded-xl border border-line bg-surface p-4 sm:p-5">
             {editing ? (
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor="kw-k" className="mb-1 block text-sm font-medium">키워드</label>
-                  <input
-                    id="kw-k"
-                    value={draft.keyword}
-                    onChange={(e) => setDraft((d) => ({ ...d, keyword: e.target.value }))}
-                    className="min-h-11 w-full rounded-lg border border-line-strong px-3 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="kw-s" className="mb-1 block text-sm font-medium">한 문장</label>
-                  <AutoTextarea id="kw-s" value={draft.sentence} onChange={(e) => setDraft((d) => ({ ...d, sentence: e.target.value }))} minRows={2} />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>취소</Button>
-                  <Button
-                    size="sm"
-                    disabled={!draft.keyword.trim() || !draft.sentence.trim()}
-                    onClick={() => {
-                      editKeyword(id, current.competencyId, { keyword: draft.keyword.trim(), sentence: draft.sentence.trim() });
-                      setEditing(false);
-                    }}
-                  >
-                    저장
-                  </Button>
-                </div>
-              </div>
+              <KeywordEditor
+                key={current.competencyId}
+                candidate={current}
+                onSave={(t) => editKeyword(id, current.competencyId, t)}
+                onClose={() => {
+                  backToEdit.current = true;
+                  setEditing(false);
+                }}
+              />
             ) : (
               <>
                 <p className="flex items-center gap-1.5 text-xs font-medium text-ink-faint">
@@ -148,15 +210,15 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
                     {role(current.competencyId) === "primary" ? "대표" : "보조"}
                   </span>
                 </p>
-                <p className="mt-1 text-lg font-bold">{current.keyword}</p>
-                <p className="mt-1 text-[17px] leading-relaxed">{current.sentence}</p>
+                <p className="mt-1 text-lg font-semibold">{current.keyword}</p>
+                <p className="mt-1 leading-relaxed">{current.sentence}</p>
                 <TaskState status={rewriteStatus} loadingText="이 역량의 키워드를 다시 쓰고 있어요" />
                 <div className="mt-4 flex flex-wrap justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={startEdit}>
+                  <Button ref={editRef} variant="ghost" size="sm" onClick={() => setEditing(true)}>
                     <Pencil className="size-3.5" aria-hidden />
                     수정
                   </Button>
-                  <Button variant="secondary" size="sm" loading={rewriteStatus?.state === "loading"} onClick={rewrite}>
+                  <Button ref={rewriteRef} variant="secondary" size="sm" loading={rewriteStatus?.state === "loading"} onClick={rewrite}>
                     {rewriteStatus?.state !== "loading" && <RefreshCw className="size-3.5" aria-hidden />}
                     다시 쓰기
                   </Button>
@@ -189,7 +251,7 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
           )}
 
           {matchesConfirmed ? (
-            <div className="rounded-xl border border-ok/30 bg-ok-soft p-4">
+            <div ref={doneRef} tabIndex={-1} className="rounded-xl border border-ok/30 bg-ok-soft p-4 focus:outline-none">
               <p className="flex items-center gap-2 font-medium text-ok">
                 <CheckCircle2 className="size-4" aria-hidden />
                 경험을 완성했어요. 여기서 고치면 홈에도 바로 반영돼요.
@@ -219,7 +281,13 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
           ) : (
             <div className="flex items-center justify-end gap-3 pt-2">
               {missing.length > 0 && status?.state !== "loading" && <p className="text-sm text-ink-faint">연결한 역량마다 키워드가 있어야 완성할 수 있어요.</p>}
-              <Button disabled={missing.length > 0} onClick={() => completeExperience(id)}>
+              <Button
+                disabled={missing.length > 0}
+                onClick={() => {
+                  justCompleted.current = true;
+                  completeExperience(id);
+                }}
+              >
                 <CheckCircle2 className="size-4" aria-hidden />
                 경험 완성하기
               </Button>

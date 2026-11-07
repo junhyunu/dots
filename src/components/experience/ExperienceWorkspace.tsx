@@ -104,6 +104,16 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
     if (target !== step) goTo(target);
   }, [experience.status, lastStatus, step]);
 
+  // 탭이 넘치는 폭(휴대폰)에서는 지금 단계 탭을 탭 줄 가운데로 데려온다: 다음 탭(스토리의 파란 점)도 함께 보이게.
+  // 페이지는 움직이지 않게 탭 줄만 옆으로 넘긴다
+  const navRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const tab = nav?.querySelector<HTMLElement>('[aria-current="step"]');
+    if (!nav || !tab || nav.scrollWidth <= nav.clientWidth) return;
+    nav.scrollLeft = tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2;
+  }, [step]);
+
   const remove = async () => {
     const ok = await confirmAction({
       title: "이 경험을 삭제할까요?",
@@ -136,7 +146,8 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
         </button>
       </header>
 
-      <nav aria-label="진행 단계" className="mt-5 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      {/* relative: 탭 안의 화면 읽기용 글자(sr-only, 절대 위치)가 탭 줄 밖으로 페이지를 넓히지 않게 이 줄 안에 가둔다 */}
+      <nav ref={navRef} aria-label="진행 단계" className="relative mt-5 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <ol className="flex min-w-max gap-1 border-b border-line">
           {STEPS.map((s, i) => {
             const enabled = isEnabled(s.id, i);
