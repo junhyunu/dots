@@ -164,6 +164,8 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
                 value={message}
                 maxLength={FEEDBACK_MAX}
                 minRows={4}
+                // 창 안이라 길어지면 [보내기]가 밀려나므로 화면 높이의 35%까지만 늘린다 (2026-11-07 사용자 결정)
+                maxHeight="35dvh"
                 placeholder="예) 역량 연결에서 보조 역량을 어떻게 고르는지 헷갈렸어요."
                 onChange={(e) => {
                   setMessage(e.target.value);

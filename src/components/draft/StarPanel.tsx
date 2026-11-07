@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Pencil, Plus, RefreshCw, X } from "lucide-react";
 import { generate } from "@/lib/api";
 import type { StarBlock } from "@/lib/ai/contract";
@@ -36,11 +36,41 @@ async function draftStar(id: string, block?: StarBlock) {
 function BlockEditor({ block, star, onDone }: { block: StarBlock; star: StarDraft; onDone: (patch: Partial<StarDraft>) => void }) {
   const [text, setText] = useState(block === "actions" ? "" : (star[block] as string));
   const [actions, setActions] = useState<StarAction[]>(star.actions);
+  const kept = actions.filter((a) => a.label.trim() || a.body.trim());
+  // 비운 채로는 저장하지 않는다 (AI가 이해한 내용과 같은 규칙)
+  const empty = block === "actions" ? kept.length === 0 : !text.trim();
+  const patch = (): Partial<StarDraft> => (block === "actions" ? { actions: kept } : { [block]: text.trim() });
+
+  // [저장] 없이 다음 단계·다른 탭으로 가도 고친 글을 잃지 않게, 닫힐 때 저장한다 (비었거나 그대로면 저장하지 않음)
+  const pending = useRef<Partial<StarDraft> | null>(null);
+  const original = block === "actions" ? JSON.stringify(star.actions) : (star[block] as string);
+  pending.current = empty || JSON.stringify(block === "actions" ? kept : text.trim()) === (block === "actions" ? original : JSON.stringify(original.trim())) ? null : patch();
+  const done = (p: Partial<StarDraft>) => {
+    pending.current = null;
+    onDone(p);
+  };
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
+  useEffect(() => () => {
+    if (pending.current) doneRef.current(pending.current);
+  }, []);
+
+  // 열면 첫 입력칸으로 키보드 위치를 옮긴다
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    boxRef.current?.querySelector<HTMLElement>("textarea, input")?.focus({ preventScroll: true });
+  }, []);
+
+  const emptyNote = (
+    <p id={`empty-${block}`} role="alert" className="text-sm text-danger-text">
+      내용이 비어 있으면 저장할 수 없어요. 그대로 두려면 [취소]를 눌러 주세요.
+    </p>
+  );
 
   if (block === "actions") {
     const set = (i: number, patch: Partial<StarAction>) => setActions((a) => a.map((x, j) => (j === i ? { ...x, ...patch } : x)));
     return (
-      <div className="space-y-4">
+      <div ref={boxRef} className="space-y-4">
         {actions.map((a, i) => (
           <div key={i} className="space-y-2 rounded-lg border border-line p-3">
             <div className="flex items-center gap-2">
@@ -66,24 +96,33 @@ function BlockEditor({ block, star, onDone }: { block: StarBlock; star: StarDraf
           <Plus className="size-4" aria-hidden />
           행동 추가
         </Button>
-        <EditorButtons onCancel={() => onDone({})} onSave={() => onDone({ actions: actions.filter((a) => a.label.trim() || a.body.trim()) })} />
+        {empty && emptyNote}
+        <EditorButtons disabled={empty} noteId={`empty-${block}`} onCancel={() => done({})} onSave={() => done(patch())} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      <AutoTextarea value={text} onChange={(e) => setText(e.target.value)} aria-label="내용 수정" minRows={3} />
-      <EditorButtons onCancel={() => onDone({})} onSave={() => onDone({ [block]: text })} />
+    <div ref={boxRef} className="space-y-2">
+      <AutoTextarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        aria-label="내용 수정"
+        aria-invalid={empty || undefined}
+        aria-describedby={empty ? `empty-${block}` : undefined}
+        minRows={3}
+      />
+      {empty && emptyNote}
+      <EditorButtons disabled={empty} noteId={`empty-${block}`} onCancel={() => done({})} onSave={() => done(patch())} />
     </div>
   );
 }
 
-function EditorButtons({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }) {
+function EditorButtons({ onCancel, onSave, disabled, noteId }: { onCancel: () => void; onSave: () => void; disabled?: boolean; noteId?: string }) {
   return (
     <div className="flex justify-end gap-2">
       <Button variant="ghost" size="sm" onClick={onCancel}>취소</Button>
-      <Button size="sm" onClick={onSave}>저장</Button>
+      <Button size="sm" onClick={onSave} disabled={disabled} aria-describedby={disabled ? noteId : undefined}>저장</Button>
     </div>
   );
 }
@@ -93,6 +132,13 @@ function BlockCard({ experienceId, block, star }: { experienceId: string; block:
   const [editing, setEditing] = useState(false);
   const key = `${experienceId}:star:${block.id}`;
   const status = useTask(key);
+  const editRef = useRef<HTMLButtonElement>(null);
+  const backToEdit = useRef(false);
+  useEffect(() => {
+    if (editing || !backToEdit.current) return;
+    backToEdit.current = false;
+    editRef.current?.focus({ preventScroll: true });
+  }, [editing]);
 
   return (
     <section className="rounded-xl border border-line bg-surface p-4 sm:p-5" aria-labelledby={`blk-${block.id}`}>
@@ -103,7 +149,7 @@ function BlockCard({ experienceId, block, star }: { experienceId: string; block:
         <h3 id={`blk-${block.id}`} className="flex-1 font-semibold">{block.name}</h3>
         {!editing && (
           <>
-            <Button variant="ghost" size="sm" onClick={() => setEditing(true)} aria-label={`${block.name} 직접 수정`}>
+            <Button ref={editRef} variant="ghost" size="sm" onClick={() => setEditing(true)} aria-label={`${block.name} 직접 수정`}>
               <Pencil className="size-3.5" aria-hidden />
               <span className="hidden sm:inline">수정</span>
             </Button>
@@ -129,6 +175,7 @@ function BlockCard({ experienceId, block, star }: { experienceId: string; block:
           star={star}
           onDone={(patch) => {
             if (Object.keys(patch).length) editStar(experienceId, patch);
+            backToEdit.current = true;
             setEditing(false);
           }}
         />
@@ -156,13 +203,22 @@ export default function StarPanel({ experience }: { experience: Experience }) {
   const key = `${id}:star`;
   const status = useAutoTask(key, canDraft && !star, () => draftStar(id));
 
+  // 이 화면에서 원고가 처음 만들어지면 키보드 위치를 "STAR 경험 원고" 제목으로 옮긴다
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const waiting = useRef(!star);
+  useEffect(() => {
+    if (!waiting.current || !star) return;
+    waiting.current = false;
+    titleRef.current?.focus({ preventScroll: true });
+  }, [star]);
+
   if (!canDraft) return <p className="text-ink-soft">질문을 모두 마치면 원고를 만들어 드려요.</p>;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-lg font-bold sm:text-2xl">STAR 경험 원고</h2>
+          <h2 ref={titleRef} tabIndex={-1} className="text-lg font-bold focus:outline-none sm:text-2xl">STAR 경험 원고</h2>
           <p className="mt-1 text-sm text-ink-soft">답변에 없는 수치·성과·감정은 넣지 않았어요. 블록마다 직접 고치거나 다시 생성할 수 있어요.</p>
         </div>
         {star && (
