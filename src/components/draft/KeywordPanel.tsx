@@ -3,7 +3,7 @@
 // 대표 키워드 = 대표 역량의 키워드 (여기서는 바꾸지 않고 역량 연결에서 바꾼다, 사용자 결정 2026-11-01).
 // 마지막 단계라 [경험 완성하기]와 완성 안내가 여기에 있다.
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Home, Pencil, PenLine, Plus, RefreshCw, Star } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Home, Pencil, PenLine, Plus, RefreshCw, Star } from "lucide-react";
 import Link from "next/link";
 import { generate } from "@/lib/api";
 import { competencyName } from "@/lib/domain/competencies";
@@ -165,14 +165,28 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
             )}
           </section>
 
-          <p className="text-sm text-ink-soft">
-            <Star className="mr-1 inline size-3.5 fill-primary text-primary-text" aria-hidden />
-            대표 키워드는 대표 역량({primaryId ? competencyName(primaryId) : "없음"})의 키워드예요. 바꾸려면{" "}
-            <button type="button" onClick={onMatch} className="cursor-pointer font-semibold text-primary-text underline underline-offset-2">
-              역량 연결
-            </button>
-            에서 대표 역량을 바꿔 주세요.
-          </p>
+          {primaryId ? (
+            <p className="text-sm text-ink-soft">
+              <Star className="mr-1 inline size-3.5 fill-primary text-primary-text" aria-hidden />
+              대표 키워드는 대표 역량({competencyName(primaryId)})의 키워드예요. 바꾸려면{" "}
+              <button type="button" onClick={onMatch} className="cursor-pointer font-semibold text-primary-text underline underline-offset-2">
+                역량 연결
+              </button>
+              에서 대표 역량을 바꿔 주세요.
+            </p>
+          ) : (
+            // 완성한 경험에서 대표를 뺀 경우: "(없음)의 키워드" 대신 지금 상태와 할 일을 알려 준다
+            <p role="status" className="flex items-start gap-2 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger-text">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                대표 역량이 없어요.{" "}
+                <button type="button" onClick={onMatch} className="cursor-pointer font-semibold underline underline-offset-2">
+                  역량 연결
+                </button>
+                에서 대표 역량을 하나 골라 주세요.
+              </span>
+            </p>
+          )}
 
           {matchesConfirmed ? (
             <div className="rounded-xl border border-ok/30 bg-ok-soft p-4">
