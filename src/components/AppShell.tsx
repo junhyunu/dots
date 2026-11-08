@@ -297,6 +297,16 @@ export default function AppShell() {
     return () => window.removeEventListener("keydown", onKey);
   }, [drawerOpen]);
 
+  // 다른 화면(다른 경험·내 역량 한눈에 보기·새 경험)으로 바뀌면 맨 위(경험 제목·단계 탭)부터 보이게.
+  // 이전 화면의 스크롤 위치에 머물면 어떤 경험이 열렸는지 안 보여서 (2026-11-08). 처음 열 때는 그대로
+  const screenKey = view === "experience" ? `experience:${experience?.id}` : view;
+  const lastScreen = useRef(screenKey);
+  useEffect(() => {
+    if (lastScreen.current === screenKey) return;
+    lastScreen.current = screenKey;
+    window.scrollTo({ top: 0 });
+  }, [screenKey]);
+
   // 선택된 경험이 지워졌으면 새 경험 화면으로
   const content =
     view === "matrix" ? <CompetencyMatrix /> : view === "experience" && experience ? <ExperienceWorkspace key={experience.id} experience={experience} initialStep={initialStep} /> : <NewExperienceForm />;

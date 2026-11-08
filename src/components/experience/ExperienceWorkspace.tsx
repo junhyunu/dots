@@ -130,7 +130,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
     <article aria-labelledby="exp-title">
       <header className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h1 id="exp-title" className="text-xl font-bold tracking-tight break-keep sm:text-[28px]">
+          <h1 id="exp-title" tabIndex={-1} className="focus:outline-none text-xl font-bold tracking-tight break-keep sm:text-[28px]">
             {basic.title}
           </h1>
           {(basic.period || basic.role) && (

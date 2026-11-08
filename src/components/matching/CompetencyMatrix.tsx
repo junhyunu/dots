@@ -52,6 +52,12 @@ export default function CompetencyMatrix() {
   const exps = order.map((id) => all[id]).filter((e): e is Experience => !!e && e.matchesConfirmed);
   const groups = COMPETENCIES.map((c) => ({ c, rows: rowsFor(exps, c) }));
 
+  // 누른 카드가 사라지므로 키보드 위치를 열린 경험의 제목으로 (화면은 AppShell이 맨 위로 올린다)
+  const openExperience = (id: string) => {
+    setView("experience", id);
+    setTimeout(() => document.getElementById("exp-title")?.focus({ preventScroll: true }), 0);
+  };
+
   const jump = (cid: string) => {
     const el = document.getElementById(sectionId(cid)) as HTMLDetailsElement | null;
     if (!el) return;
@@ -98,6 +104,8 @@ export default function CompetencyMatrix() {
               <button
                 type="button"
                 onClick={() => jump(c.id)}
+                // 화면 읽기: "문제 해결7"처럼 붙어 읽히지 않게 숫자의 뜻까지
+                aria-label={rows.length ? `${c.name}, 경험 ${rows.length}개` : `${c.name}, 빈틈(경험 없음)`}
                 // 빈 역량은 점선 테두리 + 회색 '빈틈'만 (파란 옅은 바탕은 "선택됨" 표시와 같아 켜진 것처럼 보여서, 2026-11-04 사용자 결정)
                 className={`press inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 text-sm font-medium sm:min-h-9 ${
                   rows.length ? "" : "border-dashed"
@@ -118,9 +126,10 @@ export default function CompetencyMatrix() {
             // 처음엔 모두 접힘(다 열려 있으면 역량끼리 구분이 안 됨, 사용자 결정). 여러 칸을 함께 열 수 있고, 열린 칸은 테두리를 진하게 해 역량 경계를 보여 준다
             <details key={c.id} id={sectionId(c.id)} className="group scroll-mt-[calc(var(--top-offset)+5rem)] rounded-2xl border border-line bg-subtle open:border-ink-faint/40 lg:scroll-mt-[calc(var(--top-offset)+2rem)]">
               <summary className="flex min-h-14 cursor-pointer list-none items-start gap-3 rounded-2xl px-4 py-3 sm:px-5 [&::-webkit-details-marker]:hidden">
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-lg font-bold">{c.name}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2">
+                    {/* 역량 이름은 제목(h2): 화면 읽기 프로그램의 제목 이동으로 역량을 오갈 수 있게 */}
+                    <h2 className="text-lg font-semibold">{c.name}</h2>
                     {rows.length ? (
                       <span className="text-sm text-ink-faint tabular-nums">
                         경험 {rows.length}개 · 대표 {primaries} · 보조 {rows.length - primaries}
@@ -128,9 +137,9 @@ export default function CompetencyMatrix() {
                     ) : (
                       <span className="self-center rounded-md border border-dashed border-line-strong bg-surface px-1.5 py-0.5 text-xs font-semibold text-ink-soft">빈틈</span>
                     )}
-                  </span>
-                  <span className="mt-0.5 block text-sm text-ink-faint">{c.description}</span>
-                </span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-ink-faint">{c.description}</p>
+                </div>
                 <ChevronDown className="mt-1.5 size-4 shrink-0 text-ink-faint transition-transform duration-150 group-open:rotate-180" aria-hidden />
               </summary>
               <div className="px-4 pb-4 sm:px-5 sm:pb-5">
@@ -150,7 +159,7 @@ export default function CompetencyMatrix() {
                 ) : (
                   <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                     {rows.map((row) => (
-                      <ExperienceTile key={row.exp.id} row={row} onOpen={() => setView("experience", row.exp.id)} />
+                      <ExperienceTile key={row.exp.id} row={row} onOpen={() => openExperience(row.exp.id)} />
                     ))}
                   </ul>
                 )}
