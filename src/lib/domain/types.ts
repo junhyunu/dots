@@ -107,6 +107,8 @@ export interface Story {
   followups: QARound[];
   subtitle: string;
   body: string;
+  /** AI가 글을 한 번이라도 썼는지. 사용자가 본문을 모두 지워도 글 칸을 그대로 두고 새로 쓰지 않으려고 (예전 데이터는 없음 → storyWritten이 내용으로 판단) */
+  written?: boolean;
   createdAt: string;
   updatedAt: string;
 }

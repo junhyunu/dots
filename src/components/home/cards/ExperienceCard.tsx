@@ -7,6 +7,7 @@ import { BookOpen, Check, ChevronDown, ChevronUp, Copy, Download, Loader2, Flag,
 import { competency, competencyName } from "@/lib/domain/competencies";
 import { matchFor, summaryKeyword, type ShowcaseExperience } from "@/lib/domain/showcase";
 import { copyText, starText } from "@/lib/domain/text";
+import { showToast } from "@/components/ui/Toast";
 import type { StarFormat } from "@/lib/export/download";
 import type { CompetencyId } from "@/lib/domain/types";
 import { href } from "@/lib/mode";
@@ -140,7 +141,8 @@ export default function ExperienceCard({ item, competencyId }: { item: ShowcaseE
     if (await copyText(starText(item.basic.title, item.star))) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }
+      showToast("원고를 복사했어요");
+    } else showToast("복사하지 못했어요. 원고를 직접 선택해 복사해 주세요.");
   };
 
   return (

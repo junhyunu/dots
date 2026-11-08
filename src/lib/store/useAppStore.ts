@@ -375,7 +375,7 @@ export const useAppStore = create<Store>()(
         setStoryResult: (id, storyId, result) =>
           edit(id, (e) => {
             const story = e.stories.find((s) => s.id === storyId);
-            if (story) Object.assign(story, result, { updatedAt: now() });
+            if (story) Object.assign(story, result, { written: true, updatedAt: now() });
           }),
 
         editStory: (id, storyId, patch) =>

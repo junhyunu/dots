@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Lock, Trash2 } from "lucide-react";
+import { storyWritten } from "@/lib/domain/text";
 import type { Experience, ExperienceStatus } from "@/lib/domain/types";
 import { useAppStore } from "@/lib/store/useAppStore";
 import InterviewPanel from "@/components/interview/InterviewPanel";
@@ -59,7 +60,7 @@ function LockBubble({ anchor, onClose }: { anchor: HTMLElement; onClose: () => v
       id="story-lock-note"
       role="status"
       style={pos ? { left: pos.left, top: pos.top } : { left: 0, top: 0, visibility: "hidden" }}
-      className="fixed z-50 w-max max-w-[calc(100vw-32px)] rounded-lg bg-ink px-3 py-2 text-[13px] leading-[1.385] font-medium tracking-[0.0194em] whitespace-nowrap text-bg shadow-[0_4px_12px_-4px_rgb(0_0_0/0.3)] sm:text-sm sm:leading-[1.429] sm:tracking-[0.0145em]"
+      className="fixed z-50 w-max max-w-[calc(100vw-32px)] rounded-[8px] bg-ink px-3 py-2 text-[13px] leading-[1.385] font-medium tracking-[0.0194em] whitespace-nowrap text-bg shadow-[0_4px_12px_-4px_rgb(0_0_0/0.3)] sm:text-sm sm:leading-[1.429] sm:tracking-[0.0145em]"
     >
       <span className="sm:hidden">경험을 완성하면 쓸 수 있어요</span>
       <span className="hidden sm:inline">경험을 완성하면 스토리를 쓸 수 있어요</span>
@@ -154,7 +155,7 @@ export default function ExperienceWorkspace({ experience, initialStep }: { exper
             const locked = s.id === "story" && storyLocked;
             const current = s.id === step;
             // 잠긴 탭에는 체크를 달지 않는다 (완성 전에 써 둔 스토리가 있어도 '다 함'과 '잠김'이 함께 보이지 않게)
-            const done = s.id === "story" ? !locked && experience.stories.some((x) => x.body) : i < reached || (i === reached && experience.status === "done");
+            const done = s.id === "story" ? !locked && experience.stories.some(storyWritten) : i < reached || (i === reached && experience.status === "done");
             // 경험을 완성했는데 스토리가 아직 없으면 다음 할 일로 작은 점을 단다
             const nudge = s.id === "story" && experience.status === "done" && !done && !current;
             return (

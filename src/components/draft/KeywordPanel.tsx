@@ -9,6 +9,7 @@ import { generate } from "@/lib/api";
 import { competencyName } from "@/lib/domain/competencies";
 import { starBody } from "@/lib/domain/context";
 import { missingKeywordComps } from "@/lib/domain/keywords";
+import { storyWritten } from "@/lib/domain/text";
 import type { CompetencyId, Experience, KeywordCandidate } from "@/lib/domain/types";
 import { getStore, useAppStore } from "@/lib/store/useAppStore";
 import { runTask, useAutoTask, useTask } from "@/lib/store/useTaskRunner";
@@ -113,7 +114,7 @@ export default function KeywordPanel({ experience, onStory, onMatch }: { experie
   const primaryId = matches?.find((m) => m.role === "primary")?.competencyId;
   const rewriteKey = current ? `${id}:keyword:${current.competencyId}` : `${id}:keyword:none`;
   const rewriteStatus = useTask(rewriteKey);
-  const hasStory = experience.stories.some((s) => s.body);
+  const hasStory = experience.stories.some(storyWritten);
 
   // 키보드 위치: 누른 버튼이 사라지거나 꺼지면 페이지 전체로 돌아가므로 직접 옮긴다
   const titleRef = useRef<HTMLHeadingElement>(null);

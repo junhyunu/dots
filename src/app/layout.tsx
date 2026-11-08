@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { THEME_SCRIPT } from "@/components/brand/ThemeToggle";
 import ConfirmHost from "@/components/ui/ConfirmDialog";
+import ToastHost from "@/components/ui/Toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh antialiased">
         {children}
         <ConfirmHost />
+        <ToastHost />
       </body>
     </html>
   );

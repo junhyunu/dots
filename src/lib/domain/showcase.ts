@@ -1,4 +1,5 @@
 // 홈 카드에 보여줄 경험 결과물. 실제 경험(완성된 것)과 예시를 같은 모양으로 다룬다.
+import { storyWritten } from "./text";
 import type { CompetencyId, CompetencyMatch, Experience, KeywordCandidate, KeywordSet, StarDraft, Story } from "./types";
 
 export interface ShowcaseExperience {
@@ -22,7 +23,7 @@ export function toShowcase(exp: Experience): ShowcaseExperience | null {
     star: exp.star,
     keyword: exp.keyword,
     matches: exp.matches,
-    hasStory: exp.stories.some((s) => s.body),
+    hasStory: exp.stories.some(storyWritten),
     stories: exp.stories.filter((s) => s.body.trim()).map(({ prompt, charLimit, subtitle, body }) => ({ prompt, charLimit, subtitle, body })),
   };
 }
