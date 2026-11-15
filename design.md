@@ -25,13 +25,17 @@
 |---|---|---|---|---|
 | `bg` | 페이지 바탕 | Background/Normal/Normal | `#FFFFFF` | `#1B1C1E` |
 | `surface` | 카드, 입력칸 | Background/Elevated/Normal | `#FFFFFF` | `#212225` |
-| `subtle` | 옅은 영역, 사이드바 | Background/Normal/Alternative | `#F7F7F8` | `#2A2B2E` |
+| `subtle` | 옅은 영역(마우스 올림, 단계 표시, 안내 상자) | Background/Normal/Alternative | `#F7F7F8` | `#2A2B2E` |
 | `line` | 기본 테두리 | Line/Solid/Neutral | `#EAEBEC` | `#333438` |
 | `line-strong` | 입력칸·강한 테두리 | Line/Solid/Normal | `#E1E2E4` | `#46474C` † |
 | `ink` | 본문, 홈 주요 버튼 | Label/Normal | `#171719` | `#F7F7F8` |
 | `ink-soft` | 보조 글 | Label/Neutral (섞은 값) | `#47484C` | `#AEB0B3` |
 | `ink-faint` | 흐린 글, 설명 | Cool Neutral 50 / 70 | `#70737C` * | `#989BA2` |
 | `placeholder` | 입력칸 안내 글 | Label/Assistive (섞은 값) | `#C7C8C9` | `#5A5C63` |
+| `scrim` / `scrim-dark` | 창·서랍 뒤를 덮는 막 | — | `#171719` 30% | 검정 60% |
+
+- **사이드바 바탕은 `bg`(본문과 같음) + 오른쪽 테두리 `line`.** `subtle`을 쓰지 않는다: 그 안의 마우스 올림·이름 바꾸기 줄·단계 표시가 모두 `subtle`이라 바탕에 묻혀서 (2026-11-15 사용자 결정, 화면에 문서를 맞춤)
+- 창 뒤 막은 다크에서 `ink`(밝은 색)로 덮으면 뒤가 뿌옇게 밝아지므로 따로 둔 `scrim-dark`를 쓴다 (2026-11-15)
 
 \* 몽타주 Label/Alternative(`#37383C9C`)는 흰 바탕에서 3.7:1이라 본문 기준(4.5:1)에 못 미친다. 그래서 `ink-faint`는 Cool Neutral 50(흰 바탕 4.7:1)을 쓴다. `subtle` 바탕 위에서는 4.4:1이라 그 위의 작은 글자는 `ink-soft`를 쓴다.
 

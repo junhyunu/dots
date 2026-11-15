@@ -8,7 +8,7 @@ import { DotsWordmark } from "./brand/DotsLogo";
 import ThemeToggle from "./brand/ThemeToggle";
 import FeedbackButton from "./feedback/FeedbackButton";
 import NewExperienceForm from "./experience/NewExperienceForm";
-import ExperienceItemMenu from "./experience/ExperienceItemMenu";
+import ExperienceItemMenu, { type ExperienceItemMenuHandle } from "./experience/ExperienceItemMenu";
 import { confirmAction } from "./ui/ConfirmDialog";
 import ExperienceWorkspace, { type Step } from "./experience/ExperienceWorkspace";
 import CompetencyMatrix from "./matching/CompetencyMatrix";
@@ -44,12 +44,54 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
     setDraft(exp.basic.title);
     setRenaming(true);
   };
-  // 빈 이름은 저장하지 않는다 (원래 이름으로)
-  const finishRename = (save: boolean) => {
+  // ⋯ 목록으로 한 일(이름 바꾸기·삭제 취소)이 끝나면 키보드 위치를 방금 쓴 ⋯로 돌려놓는다.
+  // ⋯가 숨어 있으면(휴대폰에서 꾹 눌러 연 줄) 그 경험 줄로 (2026-11-15, 페이지 맨 앞으로 사라지던 문제)
+  const rowRef = useRef<HTMLButtonElement>(null);
+  const backToMenu = () => {
+    if (!menuRef.current?.focus()) rowRef.current?.focus();
+  };
+  const refocusAfterRename = useRef(false);
+  useEffect(() => {
+    if (renaming || !refocusAfterRename.current) return;
+    refocusAfterRename.current = false;
+    backToMenu();
+  }, [renaming]);
+
+  // 빈 이름은 저장하지 않는다 (원래 이름으로). Enter·Esc로 끝내면 ⋯로 돌아오고, 바깥을 눌러 끝내면 누른 곳에 둔다
+  const finishRename = (save: boolean, refocus = false) => {
     const title = draft.trim();
     if (save && title && title !== exp.basic.title) updateBasic(exp.id, { ...exp.basic, title });
+    refocusAfterRename.current = refocus;
     setRenaming(false);
   };
+  // 휴대폰: 줄을 꾹 누르면(0.5초) ⋯ 목록이 열린다. 손가락이 움직이면(스크롤) 취소, 열린 뒤 손을 떼도 경험은 열리지 않음 (2026-11-10)
+  const menuRef = useRef<ExperienceItemMenuHandle>(null);
+  const press = useRef<{ timer: number; x: number; y: number } | null>(null);
+  const longPressed = useRef(false);
+  const cancelPress = () => {
+    if (press.current) window.clearTimeout(press.current.timer);
+    press.current = null;
+  };
+  useEffect(() => cancelPress, []);
+  const onPointerDown = (e: React.PointerEvent) => {
+    longPressed.current = false;
+    if (e.pointerType !== "touch") return;
+    cancelPress();
+    press.current = {
+      x: e.clientX,
+      y: e.clientY,
+      timer: window.setTimeout(() => {
+        press.current = null;
+        longPressed.current = true;
+        navigator.vibrate?.(10);
+        menuRef.current?.open();
+      }, 500),
+    };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (press.current && Math.hypot(e.clientX - press.current.x, e.clientY - press.current.y) > 10) cancelPress();
+  };
+
   const remove = async () => {
     const ok = await confirmAction({
       title: "이 경험을 삭제할까요?",
@@ -58,11 +100,13 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
       tone: "danger",
     });
     if (ok) deleteExperience(exp.id);
+    else backToMenu();
   };
 
   if (renaming)
     return (
-      <li className="flex min-h-11 items-center gap-2 rounded-lg bg-subtle px-3 py-1.5">
+      // 이름 칸: 손가락 기기 44px, 마우스 기기 36px
+      <li className="flex min-h-11 items-center gap-2 rounded-lg bg-subtle px-3 pointer-fine:py-1.5">
         <FileText className="size-4 shrink-0" aria-hidden />
         <input
           autoFocus
@@ -71,16 +115,16 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
           onFocus={(e) => e.target.select()}
           onBlur={() => finishRename(true)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") finishRename(true);
+            if (e.key === "Enter") finishRename(true, true);
             if (e.key === "Escape") {
               // 서랍 메뉴 닫기로 넘어가지 않게
               e.stopPropagation();
               e.nativeEvent.stopImmediatePropagation();
-              finishRename(false);
+              finishRename(false, true);
             }
           }}
           aria-label="경험명 바꾸기"
-          className="min-h-9 min-w-0 flex-1 rounded-md border border-primary bg-surface px-2 text-[15px] focus:ring-2 focus:ring-primary/20 focus:outline-none"
+          className="min-h-11 min-w-0 flex-1 rounded-md border pointer-fine:min-h-9 border-primary bg-surface px-2 text-[15px] focus:ring-2 focus:ring-primary/20 focus:outline-none"
         />
       </li>
     );
@@ -89,10 +133,27 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
     // 마우스를 올리거나 키보드로 오면 오른쪽 위 단계 표시 자리에 ⋯가 나온다. 휴대폰(마우스 없음)은 지금 보고 있는 경험에만 늘 보인다
     <li className="group relative">
       <button
+        ref={rowRef}
         type="button"
-        onClick={onClick}
+        onClick={() => {
+          if (longPressed.current) {
+            longPressed.current = false;
+            return;
+          }
+          onClick();
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
+        onPointerLeave={cancelPress}
+        // 꾹 누를 때 브라우저의 글자 선택·길게 누르기 메뉴가 뜨지 않게
+        onContextMenu={(e) => {
+          if (press.current || longPressed.current) e.preventDefault();
+        }}
         aria-current={active ? "page" : undefined}
-        className={`flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-lg py-2 pr-1 pl-3 text-left transition-colors duration-150 ${
+        // 키보드 테두리는 줄 안쪽에 (목록 스크롤 상자에 양옆이 잘리지 않게)
+        className={`flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-lg py-2 pr-1 pl-3 text-left transition-colors duration-150 select-none [-webkit-touch-callout:none] focus-visible:-outline-offset-2 ${
           active ? "bg-primary-soft text-primary-text" : "hover:bg-subtle"
         }`}
       >
@@ -103,7 +164,8 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
             <Highlighted text={exp.basic.title} query={query} />
           </span>
           {hit.field && (
-            <span className="mt-0.5 block truncate text-xs text-ink-faint">
+            // 옅은 파랑(지금 보는 줄)·회색(마우스 올림) 바탕 위에서도 읽히게 ink-soft (2026-11-15)
+            <span className="mt-0.5 block truncate text-xs text-ink-soft">
               {hit.field} · <Highlighted text={snippetAround(hit.text, query)} query={query} />
             </span>
           )}
@@ -117,10 +179,12 @@ function ExperienceItem({ exp, hit, query, active, onClick }: { exp: Experience;
         </span>
       </button>
       <ExperienceItemMenu
+        ref={menuRef}
         title={exp.basic.title}
         onRename={startRename}
         onDelete={() => void remove()}
-        className={`absolute top-0 right-0 opacity-0 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100 ${active ? "[@media(hover:none)]:opacity-100" : ""}`}
+        // 휴대폰에서 지금 보고 있지 않은 줄의 ⋯는 보이지 않을 뿐 아니라 눌리지도 않게(exp-menu-idle) → 줄 어디를 눌러도 그 경험이 열림
+        className={`absolute top-0 right-0 opacity-0 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100 focus-visible:-outline-offset-2 ${active ? "[@media(hover:none)]:opacity-100" : "exp-menu-idle"}`}
       />
     </li>
   );
@@ -211,14 +275,15 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
               aria-label="경험 검색"
               aria-describedby="exp-search-hint"
               placeholder="경험 검색"
-              className="block min-h-11 w-full rounded-lg border border-line-strong bg-surface pr-10 pl-9 text-[15px] placeholder:text-placeholder focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none sm:min-h-10 [&::-webkit-search-cancel-button]:hidden"
+              className="block min-h-11 w-full rounded-lg border border-line-strong bg-surface pr-10 pl-9 text-[15px] placeholder:text-placeholder focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none sm:pointer-fine:min-h-10 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="검색어 지우기"
-                className="absolute top-1/2 right-0.5 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-ink-faint hover:text-ink"
+                // 손가락 기기는 44px(검색칸 높이 그대로), 마우스 기기 640px 이상은 40px
+                className="absolute top-1/2 right-0 flex size-11 -translate-y-1/2 cursor-pointer sm:pointer-fine:right-0.5 sm:pointer-fine:size-10 items-center justify-center rounded-lg text-ink-faint hover:text-ink"
               >
                 <X className="size-4" aria-hidden />
               </button>
@@ -290,12 +355,62 @@ export default function AppShell() {
   const viewingId = view === "experience" ? experience?.id : undefined;
   const waiting = useAppStore((s) => Object.values(s.experiences).filter((e) => e.status !== "done" && e.id !== viewingId).length);
 
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  // 서랍이 열려 있는 동안: Esc = 닫기, 뒤 화면은 스크롤되지 않음, PC 폭이 되면 닫기
   useEffect(() => {
     if (!drawerOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawerOpen(false);
+    // 확인 창(삭제 등) 안의 Esc는 그 창만 닫는다. 서랍까지 닫히지 않게 (2026-11-15)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !(e.target as Element | null)?.closest?.("dialog")) setDrawerOpen(false);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const html = document.documentElement;
+    const prevOverflow = html.style.overflow;
+    html.style.overflow = "hidden";
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const onWide = () => wide.matches && setDrawerOpen(false);
+    wide.addEventListener("change", onWide);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      html.style.overflow = prevOverflow;
+      wide.removeEventListener("change", onWide);
+    };
   }, [drawerOpen]);
+
+  // 열면 키보드 위치를 서랍 안([메뉴 닫기])으로, 닫으면 메뉴 버튼으로 돌려놓는다.
+  // 경험을 골라 닫힌 경우처럼 다른 곳이 이미 초점을 가져갔으면 건드리지 않는다
+  useEffect(() => {
+    if (drawerOpen) {
+      wasOpen.current = true;
+      closeBtnRef.current?.focus();
+    } else if (wasOpen.current) {
+      wasOpen.current = false;
+      const a = document.activeElement;
+      if (!a || a === document.body) menuBtnRef.current?.focus({ preventScroll: true });
+    }
+  }, [drawerOpen]);
+
+  // 서랍 안에서만 Tab이 돈다 (⋯ 목록은 body에 떠 있어 따로 처리됨)
+  const trapTab = (e: React.KeyboardEvent) => {
+    if (e.key !== "Tab" || !drawerRef.current) return;
+    const items = [
+      ...drawerRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+    ].filter((el) => el.getClientRects().length > 0);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   // 다른 화면(다른 경험·내 역량 한눈에 보기·새 경험)으로 바뀌면 맨 위(경험 제목·단계 탭)부터 보이게.
   // 이전 화면의 스크롤 위치에 머물면 어떤 경험이 열렸는지 안 보여서 (2026-11-08). 처음 열 때는 그대로
@@ -314,7 +429,7 @@ export default function AppShell() {
   return (
     <div className="flex min-h-dvh">
       {/* 키보드 사용자용: 평소엔 숨어 있고 Tab으로 오면 왼쪽 위에 뜬다. 주소에 #이 남지 않게 코드로 옮긴다 */}
-      <div className="fixed top-[calc(var(--top-offset)+0.5rem)] left-2 z-30">
+      <div className="fixed top-[calc(var(--top-offset)+0.5rem)] left-2 z-30" inert={drawerOpen}>
         <a
           href="#main-content"
           onClick={(e) => {
@@ -331,7 +446,7 @@ export default function AppShell() {
       {/* 데스크톱 사이드바 */}
       <aside className="sticky top-(--top-offset) hidden h-[calc(100dvh-var(--top-offset))] w-64 shrink-0 flex-col border-r border-line bg-bg lg:flex">
         <div className="flex items-center justify-between pl-5 pr-3 pt-3">
-          <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex items-center rounded-lg">
+          <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex min-h-11 items-center rounded-lg">
             <DotsWordmark />
           </Link>
           <div className="flex items-center gap-0.5">
@@ -346,8 +461,10 @@ export default function AppShell() {
 
       {/* 모바일 상단 바 + 서랍 */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-(--top-offset) z-20 flex h-14 items-center gap-2 border-b border-line bg-bg/95 px-2 backdrop-blur lg:hidden">
+        {/* 서랍이 열려 있는 동안 가려진 상단 바·본문은 누르거나 Tab으로 갈 수 없게(inert) */}
+        <header inert={drawerOpen} className="sticky top-(--top-offset) z-20 flex h-14 items-center gap-2 border-b border-line bg-bg/95 px-2 backdrop-blur lg:hidden">
           <button
+            ref={menuBtnRef}
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-label={waiting ? `메뉴 열기, 작업 중인 경험 ${waiting}개` : "메뉴 열기"}
@@ -356,7 +473,7 @@ export default function AppShell() {
             <Menu className="size-6" aria-hidden />
             {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-primary ring-2 ring-bg" />}
           </button>
-          <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex flex-1 items-center rounded-lg">
+          <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex min-h-11 flex-1 items-center rounded-lg">
             <DotsWordmark />
           </Link>
           <div className="flex items-center gap-0.5">
@@ -366,14 +483,15 @@ export default function AppShell() {
         </header>
 
         {drawerOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="메뉴">
-            <div className="absolute inset-0 bg-ink/30" onClick={() => setDrawerOpen(false)} />
-            <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-bg shadow-xl">
+          <div ref={drawerRef} onKeyDown={trapTab} className="fixed inset-0 z-50 overscroll-contain lg:hidden" role="dialog" aria-modal="true" aria-label="메뉴">
+            <div className="absolute inset-0 touch-none bg-scrim dark:bg-scrim-dark" onClick={() => setDrawerOpen(false)} />
+            <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] overscroll-contain bg-bg shadow-xl">
               <div className="flex h-14 items-center justify-between px-4">
-                <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex items-center rounded-lg">
+                <Link href={href("/")} aria-label="Dots 닷츠 홈으로" className="flex min-h-11 items-center rounded-lg">
                   <DotsWordmark />
                 </Link>
                 <button
+                  ref={closeBtnRef}
                   type="button"
                   onClick={() => setDrawerOpen(false)}
                   aria-label="메뉴 닫기"
@@ -390,6 +508,7 @@ export default function AppShell() {
         )}
 
         <main
+          inert={drawerOpen}
           ref={mainRef}
           id="main-content"
           tabIndex={-1}

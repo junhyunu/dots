@@ -4,7 +4,7 @@
 // 시트로 보내는 내용은 lib/domain/feedback.ts가 정한다(경험 내용은 보내지 않음). 시연 모드는 보내지 않고 보낸 척만 한다.
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { CheckCircle2, Mail } from "lucide-react";
+import { CheckCircle2, Mail, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import AutoTextarea from "@/components/ui/AutoTextarea";
 import { Choice } from "@/components/ui/FormFields";
@@ -77,7 +77,16 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
 
   const trimmed = message.trim();
   const coolingDown = Date.now() - lastSentAt < COOLDOWN_MS;
+  // 30초가 끝나는 순간 화면을 다시 그려 안내를 지우고 [보내기]를 켠다 (전에는 글자를 더 쳐야 풀렸음, 2026-11-15)
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!open || !coolingDown) return;
+    const t = window.setTimeout(() => rerender((n) => n + 1), lastSentAt + COOLDOWN_MS - Date.now() + 50);
+    return () => window.clearTimeout(t);
+  }, [open, coolingDown]);
   const canSend = !!kind && !!trimmed && message.length <= FEEDBACK_MAX && send.state !== "sending" && !coolingDown;
+  // 무엇이 빠져서 못 보내는지 (30초 기다림은 따로 안내가 있음)
+  const missing = coolingDown || send.state !== "idle" ? null : !kind && !trimmed ? "종류를 고르고 내용을 적어 주세요." : !kind ? "어떤 의견인지 골라 주세요." : !trimmed ? "내용을 적어 주세요." : null;
 
   const submit = async () => {
     if (!kind || !place || !canSend) return;
@@ -105,16 +114,14 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
         <dialog
           ref={ref}
           aria-labelledby="feedback-title"
+          // 닫기는 [X]·[취소](보낸 뒤엔 [닫기])와 Esc만. 바깥을 눌러도 닫히지 않게 (쓰던 글을 실수로 잃지 않게, 2026-11-15 사용자 결정)
           onCancel={(e) => {
             e.preventDefault();
             close();
           }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
           onClose={() => setOpen(false)}
           // 스크롤은 안쪽 칸에서: 창 자체가 스크롤하면 스크롤 막대가 둥근 모서리를 네모나게 덮는다
-          className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-ink/30"
+          className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-scrim dark:backdrop:bg-scrim-dark"
         >
           <div className="max-h-[calc(100dvh-2rem-2px)] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
           {send.state === "sent" ? (
@@ -136,7 +143,7 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
                 void submit();
               }}
             >
-              <h2 id="feedback-title" className="text-lg font-bold">
+              <h2 id="feedback-title" className="pr-10 text-lg font-bold">
                 의견 남기기
               </h2>
               <p className="mt-2 text-[15px] leading-relaxed break-keep text-ink-soft">
@@ -219,12 +226,18 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
               )}
               {coolingDown && send.state === "idle" && <p className="mt-3 text-sm text-ink-faint">방금 의견을 보냈어요. 30초 뒤에 다시 보낼 수 있어요.</p>}
 
-              <div className="mt-6 flex justify-end gap-2">
+              <div className="mt-6 flex flex-wrap items-center justify-end gap-x-2 gap-y-3">
+                {/* [보내기]가 꺼진 이유를 늘 보인다 (역량 연결의 다음 버튼과 같은 방식, 2026-11-15) */}
+                {missing && (
+                  <p id="feedback-missing" className="mr-auto text-sm break-keep text-ink-faint">
+                    {missing}
+                  </p>
+                )}
                 <Button type="button" variant="secondary" size="sm" onClick={close}>
                   취소
                 </Button>
                 {send.state !== "error" && (
-                  <Button type="submit" size="sm" disabled={!canSend} loading={send.state === "sending"}>
+                  <Button type="submit" size="sm" disabled={!canSend} loading={send.state === "sending"} aria-describedby={missing ? "feedback-missing" : undefined}>
                     보내기
                   </Button>
                 )}
@@ -232,6 +245,15 @@ export default function FeedbackButton({ iconClass = "size-5" }: { iconClass?: s
             </form>
           )}
           </div>
+          {/* 오른쪽 위 닫기. 처음 키보드 위치는 지금처럼 첫 입력 칸에 두려고 글 뒤에 둔다 */}
+          <button
+            type="button"
+            onClick={close}
+            aria-label="의견 창 닫기"
+            className="absolute top-2.5 right-2.5 flex size-11 cursor-pointer items-center justify-center rounded-lg text-ink-soft transition-colors duration-150 hover:bg-subtle hover:text-ink"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
         </dialog>
       )}
     </>

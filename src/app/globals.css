@@ -34,6 +34,10 @@
   --color-danger: #e52222;        /* 4.6:1 */
   --color-danger-text: #c81e1e;   /* danger-soft 바탕 위 글자 5.03:1 */
   --color-danger-soft: #feecec;
+
+  /* 창(의견·확인)·서랍 뒤를 덮는 막. 다크에서 ink(밝은 색)로 덮으면 뒤가 뿌옇게 밝아져서 따로 둔다 (2026-11-15) */
+  --color-scrim: rgb(23 23 25 / 0.3);
+  --color-scrim-dark: rgb(0 0 0 / 0.6);
 }
 
 .dark {
@@ -84,6 +88,14 @@ body {
   :focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
+  }
+}
+
+/* 사이드바 경험 줄의 ⋯: 마우스가 없는 기기에서 지금 보고 있지 않은 줄은 누를 수 없게 숨긴다.
+   키보드로 그 줄에 오면(줄 안에 focus-visible) 다시 보이고 Tab으로 갈 수 있다 (2026-11-10) */
+@media (hover: none) {
+  .group:not(:has(:focus-visible)) > .exp-menu-idle {
+    visibility: hidden;
   }
 }
 

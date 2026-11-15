@@ -73,7 +73,7 @@ export default function ConfirmHost() {
       onClick={(e) => {
         if (e.target === e.currentTarget) close(false);
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-ink/30"
+      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-line bg-surface p-0 text-ink shadow-[0_12px_32px_-12px_rgb(0_0_0/0.35)] backdrop:bg-scrim dark:backdrop:bg-scrim-dark"
     >
       <div className="p-5 sm:p-6">
         <h2 id="confirm-title" className="text-lg font-bold break-keep">

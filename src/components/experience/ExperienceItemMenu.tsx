@@ -1,19 +1,28 @@
 "use client";
 // 사이드바 경험 줄의 ⋯ 버튼과 목록(이름 바꾸기·삭제). 2026-11-04 사용자 결정 (Claude 사이드바처럼)
 // 목록은 사이드바의 스크롤 상자에 잘리지 않게 body에 띄우고, 화면 아래가 모자라면 위로 연다.
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
 import { createPortal } from "react-dom";
 import { Ellipsis, Pencil, Trash2 } from "lucide-react";
 
 const MENU_W = 176;
 const MENU_H = 104;
 
+/** 밖에서 목록을 여는 손잡이 (휴대폰에서 경험 줄을 꾹 누를 때) */
+export type ExperienceItemMenuHandle = {
+  open: () => void;
+  /** 이름 바꾸기·삭제 취소가 끝나면 ⋯로 돌아온다. 숨어 있어 초점을 못 받으면 false */
+  focus: () => boolean;
+};
+
 export default function ExperienceItemMenu({
+  ref,
   title,
   className = "",
   onRename,
   onDelete,
 }: {
+  ref?: Ref<ExperienceItemMenuHandle>;
   title: string;
   className?: string;
   onRename: () => void;
@@ -33,6 +42,14 @@ export default function ExperienceItemMenu({
     setPos(null);
     if (focusButton) btnRef.current?.focus();
   };
+  // ⋯가 숨어 있어도(보이지 않을 뿐 자리는 있음) 그 자리를 기준으로 연다
+  useImperativeHandle(ref, () => ({
+    open: place,
+    focus: () => {
+      btnRef.current?.focus();
+      return document.activeElement === btnRef.current;
+    },
+  }));
 
   // 열리면 첫 항목에 초점, 바깥 누르기·스크롤·창 크기 바뀜 = 닫기
   useLayoutEffect(() => {
@@ -65,7 +82,8 @@ export default function ExperienceItemMenu({
     } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length]?.focus();
-    } else if (e.key === "Tab") close(false);
+      // Tab: ⋯ 버튼으로 돌아간 뒤 그 다음 칸으로 (목록은 body 끝에 있어 그대로 두면 키보드 위치를 잃음)
+    } else if (e.key === "Tab") close();
   };
 
   const pick = (fn: () => void) => {
@@ -102,7 +120,7 @@ export default function ExperienceItemMenu({
               type="button"
               role="menuitem"
               onClick={() => pick(onRename)}
-              className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-left text-[15px] hover:bg-subtle focus:bg-subtle focus:outline-none"
+              className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-left text-[15px] hover:bg-subtle focus-visible:-outline-offset-2"
             >
               <Pencil className="size-4 text-ink-soft" aria-hidden />
               이름 바꾸기
@@ -111,7 +129,7 @@ export default function ExperienceItemMenu({
               type="button"
               role="menuitem"
               onClick={() => pick(onDelete)}
-              className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-left text-[15px] text-danger hover:bg-danger-soft focus:bg-danger-soft focus:outline-none"
+              className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-left text-[15px] text-danger hover:bg-danger-soft focus-visible:-outline-offset-2"
             >
               <Trash2 className="size-4" aria-hidden />
               삭제
